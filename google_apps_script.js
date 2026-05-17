@@ -16,7 +16,6 @@
  */
 
 function getSheet() {
-  var cache = CacheService.getScriptFiles(); // Use CacheService for spreadsheet ID
   var spreadSheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
   var ss;
   
