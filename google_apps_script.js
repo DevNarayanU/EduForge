@@ -98,7 +98,10 @@ function doPost(e) {
         output = { error: 'Invalid username or password' };
       } else {
         var userData = getUserData(sheet)[params.username.toLowerCase()].data;
-        if (userData[1] === params.password) {
+        var storedPassword = userData[1] != null ? userData[1].toString() : "";
+        var providedPassword = params.password != null ? params.password.toString() : "";
+        
+        if (storedPassword === providedPassword) {
           // Batch updates to decrease write frequency
           var streakData = userData[8] ? JSON.parse(userData[8]) : { dates: [] };
           var today = new Date().toISOString().split('T')[0];

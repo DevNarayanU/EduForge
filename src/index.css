@@ -216,11 +216,28 @@ body{
 }
 
 @media only screen and (max-width:600px) {
+    .front-top-actions {
+        top: 10px;
+        right: 10px;
+        gap: 8px;
+    }
+    .front-notes-link {
+        padding: 6px 10px;
+        font-size: 12px;
+        gap: 4px;
+    }
+    .front-notes-link span {
+        display: none; /* Hide text label on very small screens to prevent overlap */
+    }
+    @media only screen and (min-width: 400px) {
+        .front-notes-link span {
+            display: inline; /* Show text label if there's enough space */
+        }
+    }
     .profile-image {
         width: 40px;
         height: 40px;
-        top: 15px;
-        right: 15px;
+        position: static;
     }
     .front-content {
         width: min-content;

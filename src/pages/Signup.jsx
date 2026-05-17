@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Background from "../components/background/Background";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchApi } from "../services/api";
 
 function Signup(){

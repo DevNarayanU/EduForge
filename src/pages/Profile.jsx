@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 
 import Background from "../components/background/Background";
 import Heatmap from "../components/Heatmap/Heatmap";
@@ -616,6 +616,14 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
             </section>
           </div>
         )}
+
+        <footer className="profile-minimal-footer">
+          <Link to="/about">About</Link>
+          <span className="separator">•</span>
+          <Link to="/contact">Contact Us</Link>
+          <span className="separator">•</span>
+          <Link to="/terms">Terms & Conditions</Link>
+        </footer>
       </main>
     </>
   );

@@ -570,3 +570,44 @@
     flex-direction: column;
   }
 }
+
+/* ================= MINIMAL FOOTER ================= */
+.profile-minimal-footer {
+  margin-top: 60px;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+}
+
+.profile-minimal-footer:hover {
+  opacity: 0.9;
+}
+
+.profile-minimal-footer a {
+  font-family: 'Trispace', sans-serif;
+  font-size: 11px;
+  color: white;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.profile-minimal-footer a:hover {
+  color: #0ea5e9;
+}
+
+.profile-minimal-footer .separator {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+@media (max-width: 480px) {
+  .profile-minimal-footer {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+}

@@ -1,4 +1,3 @@
-
 import {Routes, Route} from "react-router-dom"
 import Front from "./pages/Front";
 import Home from "./pages/Home";
@@ -8,6 +7,9 @@ import Profile from "./pages/Profile";
 import Notes from "./pages/Notes";
 import NoteDetails from "./pages/NoteDetails";
 import Leaderboard from "./pages/Leaderboard";
+import About from "./pages/info/About";
+import Contact from "./pages/info/Contact";
+import Terms from "./pages/info/Terms";
 import { useState,useEffect } from "react";
 const forgeLogo = "/forge.png";
 import { fetchApi } from "./services/api";
@@ -54,6 +56,9 @@ useEffect(() => {
       <Route path="/notes" element={<Notes user={user} profileImage={profileImage}/>}/>
       <Route path="/notes/:owner/:videoId" element={<NoteDetails user={user} profileImage={profileImage}/>}/>
       <Route path="/leaderboard" element={<Leaderboard user={user} profileImage={profileImage}/>}/>
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/terms" element={<Terms />} />
     </Routes>
     </>
   )
