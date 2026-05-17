@@ -67,9 +67,10 @@ export default function Notes({ user, profileImage }) {
 
         const fetchNotes = async () => {
             try {
-                const response = await fetchApi('getNotes', { username: user }, 'GET');
+                const response = await fetchApi('getNotes', { username: user }, 'GET', { useCache: true });
                 if (response.ok) {
                     const data = await response.json();
+                    if (response.fromCache) setLoading(false);
                     setNotes(data);
                 }
             } catch (err) {

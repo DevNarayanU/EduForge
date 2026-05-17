@@ -119,18 +119,22 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
     let cancelled = false;
 
     async function loadProfile() {
+      // Show cached data if available first
       setLoading(true);
       setError("");
       setMessage("");
 
       try {
         const [profileResponse, statsResponse] = await Promise.all([
-          fetchApi('getProfile', { username: targetUser }, 'GET'),
-          fetchApi('getProfileStats', { username: targetUser }, 'GET'),
+          fetchApi('getProfile', { username: targetUser }, 'GET', { useCache: true }),
+          fetchApi('getProfileStats', { username: targetUser }, 'GET', { useCache: true }),
         ]);
 
         const profilePayload = await profileResponse.json();
         const statsPayload = await statsResponse.json();
+
+        // If we got data from cache, we might still be loading in the background
+        if (profileResponse.fromCache) setLoading(false);
 
         if (!profileResponse.ok) {
           throw new Error(profilePayload.error || "Failed to load profile");
@@ -240,12 +244,28 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
   const saveProfile = async () => {
     if (!user) return;
 
-    setSaving(true);
-    setError("");
-    setMessage("");
+    // --- Optimistic UI Update ---
+    const previousProfile = { ...profile };
+    const previousSocials = { ...socials };
+
+    setProfile((current) => ({
+      ...current,
+      display_name: form.display_name,
+      bio: form.bio,
+      role_title: form.role_title,
+      profile_image_url: form.profile_image_url,
+      location: form.location,
+      timezone: form.timezone,
+      website: form.website,
+      skills: form.skills,
+    }));
+    setSocials(formSocials);
+    setIsEditing(false);
+    setMessage("Saving in background...");
 
     try {
-      const profileResponse = await fetchApi('updateProfile', {
+      // Queue both updates
+      await fetchApi('updateProfile', {
           username: user,
           display_name: form.display_name,
           bio: form.bio,
@@ -255,50 +275,19 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
           timezone: form.timezone,
           website: form.website,
           skills: form.skills,
-      }, 'POST');
+      }, 'POST', { queue: true });
 
-      const profilePayload = await profileResponse.json();
-
-      if (!profileResponse.ok) {
-        throw new Error(profilePayload.error || "Failed to save profile");
-      }
-
-      const effectiveUsername = profilePayload.username || form.display_name || user;
-
-      const socialsResponse = await fetchApi('updateSocials', {
-          username: effectiveUsername,
+      await fetchApi('updateSocials', {
+          username: user,
           socials: formSocials,
-      }, 'POST');
+      }, 'POST', { queue: true });
 
-      const socialsPayload = await socialsResponse.json();
-
-      if (!socialsResponse.ok) {
-        throw new Error(socialsPayload.error || "Failed to save social links");
-      }
-
-      setProfile((current) => ({
-        ...current,
-        username: effectiveUsername,
-        display_name: form.display_name,
-        bio: form.bio,
-        role_title: form.role_title,
-        profile_image_url: form.profile_image_url,
-        location: form.location,
-        timezone: form.timezone,
-        website: form.website,
-        skills: form.skills,
-      }));
-      setSocials(formSocials);
-      setIsEditing(false);
-      setMessage("Profile updated.");
-
-      if (effectiveUsername !== user) {
-        setuser?.(effectiveUsername);
-      }
+      setMessage("Profile updated successfully!");
     } catch (saveError) {
+      // Rollback on error
+      setProfile(previousProfile);
+      setSocials(previousSocials);
       setError(saveError.message || "Could not save profile.");
-    } finally {
-      setSaving(false);
     }
   };
 

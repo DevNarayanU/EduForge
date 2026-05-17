@@ -59,13 +59,14 @@ export default function Video({
         watchTimeRef.current = totalMeasured;
 
         try {
-            await fetchApi('updateProfileXp', {
+            // Queue XP update in background - doesn't block UI
+            fetchApi('updateProfileXp', {
                 username: user,
                 watch_time_seconds: toSync,
                 video_id: video.id.videoId,
                 title: video.snippet.title,
                 channel_title: video.snippet.channelTitle
-            }, 'POST');
+            }, 'POST', { queue: true });
         } catch (err) {
             console.error("Error syncing XP:", err);
             // Rollback on failure if we want to retry next time
@@ -139,23 +140,22 @@ export default function Video({
     }, [user, video.id.videoId]);
 
     const handleSaveNotes = async () => {
+        // Optimistic UI: Feedback is instant
         setIsSaving(true);
+        setTimeout(() => setIsSaving(false), 1000); 
 
         try {
-            const response = await fetchApi('saveNotes', {
+            await fetchApi('saveNotes', {
                 username: user,
                 video_id: video.id.videoId,
                 content: notes,
                 title: video.snippet.title
-            }, 'POST');
-
-            if (response.ok) {
-                console.log("Notes saved successfully");
-            }
+            }, 'POST', { 
+                queue: true, 
+                debounceKey: `notes_${video.id.videoId}` 
+            });
         } catch (err) {
             console.error("Error saving notes:", err);
-        } finally {
-            setIsSaving(false);
         }
     };
 

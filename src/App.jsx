@@ -24,7 +24,7 @@ function App() {
 useEffect(() => {
   localStorage.setItem("user", user);
   if (user) {
-    fetchApi('getProfile', { username: user }, 'GET')
+    fetchApi('getProfile', { username: user }, 'GET', { useCache: true })
       .then(res => res.json())
       .then(data => {
         if (data.profile && data.profile.profile_image_url) {

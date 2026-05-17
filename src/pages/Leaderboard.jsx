@@ -52,9 +52,10 @@ export default function Leaderboard({ user }) {
     useEffect(() => {
         const fetchLeaderboard = async () => {
             try {
-                const response = await fetchApi('getLeaderboard', {}, 'GET');
+                const response = await fetchApi('getLeaderboard', {}, 'GET', { useCache: true });
                 if (response.ok) {
                     const data = await response.json();
+                    if (response.fromCache) setLoading(false);
                     setLeaderboard(data);
                 }
             } catch (err) {

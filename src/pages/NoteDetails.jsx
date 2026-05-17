@@ -45,9 +45,10 @@ export default function NoteDetails({ user }) {
 
         const fetchNote = async () => {
             try {
-                const response = await fetchApi('getNote', { username: owner, videoId: videoId }, 'GET');
+                const response = await fetchApi('getNote', { username: owner, videoId: videoId }, 'GET', { useCache: true });
                 if (response.ok) {
                     const data = await response.json();
+                    if (response.fromCache) setLoading(false);
                     setNote(data);
                     setEditedContent(data.content || "");
                     setEditedTitle(data.title || "Untitled Note");
@@ -76,28 +77,31 @@ export default function NoteDetails({ user }) {
 
     const handleSave = async () => {
         setIsSaving(true);
+        // --- Optimistic Feedback ---
+        const previousNote = { ...note };
+        setNote({
+            ...note,
+            content: editedContent,
+            title: editedTitle,
+            updated_at: new Date().toISOString()
+        });
+        setIsEditing(false);
+        setSaveStatus('success');
+        setTimeout(() => setSaveStatus(null), 3000);
+
         try {
-            const response = await fetchApi('saveNotes', {
+            await fetchApi('saveNotes', {
                 username: user,
                 video_id: videoId,
                 content: editedContent,
                 title: editedTitle
-            }, 'POST');
-
-            if (response.ok) {
-                setNote({
-                    ...note,
-                    content: editedContent,
-                    title: editedTitle,
-                    updated_at: new Date().toISOString()
-                });
-                setIsEditing(false);
-                setSaveStatus('success');
-                setTimeout(() => setSaveStatus(null), 3000);
-            } else {
-                setSaveStatus('error');
-            }
+            }, 'POST', { 
+                queue: true,
+                debounceKey: `notes_${videoId}`
+            });
         } catch (err) {
+            // Rollback on error
+            setNote(previousNote);
             console.error("Error saving note:", err);
             setSaveStatus('error');
         } finally {

@@ -14,7 +14,7 @@ export default function Heatmap({ username }) {
 
     async function fetchData() {
       try {
-        const res = await fetchApi('getStreak', { username }, 'GET');
+        const res = await fetchApi('getStreak', { username }, 'GET', { useCache: true });
         if (!res.ok) throw new Error("API error");
 
         const result = await res.json();

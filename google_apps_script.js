@@ -16,6 +16,7 @@
  */
 
 function getSheet() {
+  var cache = CacheService.getScriptFiles(); // Use CacheService for spreadsheet ID
   var spreadSheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
   var ss;
   
@@ -23,13 +24,11 @@ function getSheet() {
     try {
       ss = SpreadsheetApp.openById(spreadSheetId);
     } catch (e) {
-      // Spreadsheet might have been deleted
       PropertiesService.getScriptProperties().deleteProperty('SPREADSHEET_ID');
     }
   }
 
   if (!ss) {
-    // Attempt to find or create the spreadsheet
     var files = DriveApp.searchFiles("title = 'EduForge_Database' and mimeType = '" + MimeType.GOOGLE_SHEETS + "'");
     if (files.hasNext()) {
       ss = SpreadsheetApp.open(files.next());
@@ -42,23 +41,29 @@ function getSheet() {
     PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', ss.getId());
   }
 
-  var sheet = ss.getSheetByName("users");
-  if (!sheet) {
-    sheet = ss.insertSheet("users");
-    sheet.appendRow(["username", "password", "created_at", "profile", "socials", "stats", "activity", "notes", "streak"]);
+  return ss.getSheetByName("users");
+}
+
+/**
+ * Optimized User Lookup using a Map for caching within the execution context.
+ */
+var userCache = null;
+function getUserData(sheet) {
+  if (userCache) return userCache;
+  var data = sheet.getDataRange().getValues();
+  userCache = {};
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0]) {
+      userCache[data[i][0].toString().toLowerCase()] = { row: i + 1, data: data[i] };
+    }
   }
-  
-  return sheet;
+  return userCache;
 }
 
 function findUserRow(sheet, username) {
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][0].toString().toLowerCase() === username.toLowerCase()) {
-      return i + 1; // 1-based index
-    }
-  }
-  return -1;
+  var users = getUserData(sheet);
+  var user = users[username.toLowerCase()];
+  return user ? user.row : -1;
 }
 
 function doPost(e) {
@@ -67,9 +72,9 @@ function doPost(e) {
     var params = JSON.parse(e.postData.contents);
     var action = params.action;
     var sheet = getSheet();
+    var row = findUserRow(sheet, params.username || "");
 
     if (action === 'signup') {
-      var row = findUserRow(sheet, params.username);
       if (row !== -1) {
         output = { error: 'Username already exists' };
       } else {
@@ -77,7 +82,7 @@ function doPost(e) {
         var defaultStats = { xp: { score: 0, level: 1, watch_time_seconds: 0 } };
         sheet.appendRow([
           params.username,
-          params.password, // Storing plaintext for demo purposes
+          params.password,
           new Date().toISOString(),
           JSON.stringify(defaultProfile),
           "{}",
@@ -90,22 +95,18 @@ function doPost(e) {
       }
     } 
     else if (action === 'login') {
-      var row = findUserRow(sheet, params.username);
       if (row === -1) {
         output = { error: 'Invalid username or password' };
       } else {
-        var userPassword = sheet.getRange(row, 2).getValue();
-        if (userPassword === params.password) {
-          
-          // Update streak
-          var streakDataStr = sheet.getRange(row, 9).getValue();
-          var streakData = streakDataStr ? JSON.parse(streakDataStr) : { dates: [] };
+        var userData = getUserData(sheet)[params.username.toLowerCase()].data;
+        if (userData[1] === params.password) {
+          // Batch updates to decrease write frequency
+          var streakData = userData[8] ? JSON.parse(userData[8]) : { dates: [] };
           var today = new Date().toISOString().split('T')[0];
           if (!streakData.dates.includes(today)) {
              streakData.dates.push(today);
              sheet.getRange(row, 9).setValue(JSON.stringify(streakData));
           }
-
           output = { status: 'success', message: 'Logged in' };
         } else {
           output = { error: 'Invalid username or password' };
@@ -113,7 +114,6 @@ function doPost(e) {
       }
     }
     else if (action === 'updateProfile') {
-      var row = findUserRow(sheet, params.username);
       if (row !== -1) {
         var profileData = {
           username: params.username,
@@ -131,57 +131,41 @@ function doPost(e) {
       } else { output = { error: 'User not found' }; }
     }
     else if (action === 'updateSocials') {
-      var row = findUserRow(sheet, params.username);
       if (row !== -1) {
         sheet.getRange(row, 5).setValue(JSON.stringify(params.socials || {}));
         output = { status: 'success' };
       } else { output = { error: 'User not found' }; }
     }
     else if (action === 'updateProfileXp') {
-      var row = findUserRow(sheet, params.username);
       if (row !== -1) {
-        var statsStr = sheet.getRange(row, 6).getValue();
-        var stats = statsStr ? JSON.parse(statsStr) : { xp: { score: 0, level: 1 } };
-        
-        var streakStr = sheet.getRange(row, 9).getValue();
-        var streakObj = streakStr ? JSON.parse(streakStr) : { dates: [] };
+        var userData = getUserData(sheet)[params.username.toLowerCase()].data;
+        var stats = userData[5] ? JSON.parse(userData[5]) : { xp: { score: 0, level: 1 } };
+        var streakObj = userData[8] ? JSON.parse(userData[8]) : { dates: [] };
         
         if (!stats.xp) stats.xp = { score: 0, level: 1, watch_time_seconds: 0 };
 
-        // Advanced XP Formula logic
-        // score += (w * 0.02) * multiplier * min(1/(1 + e^((score//3600)*(score-15))), 1) + (min(w//1800, 1) * x1)
         var w = params.watch_time_seconds || 0;
         var s = streakObj.dates.length || 0;
         var currentScore = stats.xp.score || 0;
         var x1 = Math.floor(Math.random() * 60);
         
         var multiplier = (Math.min(s - 1, 16) * 1.05);
-        if (multiplier < 1) multiplier = 1; // Ensure multiplier is at least 1
+        if (multiplier < 1) multiplier = 1;
 
-        // Sigmoid-like decay component
         var sigmoidTerm = 1 / (1 + Math.exp((Math.floor(currentScore / 3600)) * (currentScore - 15)));
         var decayFactor = Math.min(sigmoidTerm, 1);
-        
         var bonusTerm = (Math.floor(w / 1800) >= 1 ? 1 : 0) * x1;
-        
-        var xpGain = (w * 0.02) * multiplier * decayFactor + bonusTerm;
-        xpGain = Math.max(0, Math.floor(xpGain)); // Ensure non-negative integer
+        var xpGain = Math.max(0, Math.floor((w * 0.02) * multiplier * decayFactor + bonusTerm));
 
         stats.xp.score += xpGain;
         stats.xp.watch_time_seconds = (stats.xp.watch_time_seconds || 0) + w;
-        
-        // Leveling: Each level is 100 XP
         stats.xp.level = Math.floor(stats.xp.score / 100) + 1;
         stats.xp.next_level_at = stats.xp.level * 100;
         stats.xp.progress = stats.xp.score % 100;
         stats.xp.level_threshold = 100;
 
-        sheet.getRange(row, 6).setValue(JSON.stringify(stats));
-
-        // Update recently watched activity
-        var activityStr = sheet.getRange(row, 7).getValue();
-        var activity = activityStr ? JSON.parse(activityStr) : [];
-        // Remove existing if same video
+        // Recently watched activity batching
+        var activity = userData[6] ? JSON.parse(userData[6]) : [];
         activity = activity.filter(function(v) { return v.reference_id !== params.video_id; });
         activity.unshift({
            id: new Date().getTime(),
@@ -191,16 +175,19 @@ function doPost(e) {
            status: "Watched"
         });
         if (activity.length > 10) activity.pop();
-        sheet.getRange(row, 7).setValue(JSON.stringify(activity));
+
+        // Optimized Write: Single call for multiple columns if possible? 
+        // GAS getRange(row, column, numRows, numColumns).setValues() is faster.
+        // We write stats (6) and activity (7) together.
+        sheet.getRange(row, 6, 1, 2).setValues([[JSON.stringify(stats), JSON.stringify(activity)]]);
 
         output = { status: 'success', xp_earned: xpGain };
       } else { output = { error: 'User not found' }; }
     }
     else if (action === 'saveNotes') {
-      var row = findUserRow(sheet, params.username);
       if (row !== -1) {
-        var notesStr = sheet.getRange(row, 8).getValue();
-        var notes = notesStr ? JSON.parse(notesStr) : [];
+        var userData = getUserData(sheet)[params.username.toLowerCase()].data;
+        var notes = userData[7] ? JSON.parse(userData[7]) : [];
         var existingIndex = notes.findIndex(function(n) { return n.video_id === params.video_id; });
         
         var newNote = {
@@ -234,32 +221,26 @@ function doGet(e) {
     var params = e.parameter;
     var action = params.action;
     var sheet = getSheet();
+    var userDataMap = getUserData(sheet);
 
     if (action === 'getProfile') {
-      var row = findUserRow(sheet, params.username);
-      if (row !== -1) {
-        var profileStr = sheet.getRange(row, 4).getValue();
-        var socialsStr = sheet.getRange(row, 5).getValue();
+      var user = userDataMap[params.username.toLowerCase()];
+      if (user) {
         output = {
           status: 'success',
           username: params.username,
-          profile: profileStr ? JSON.parse(profileStr) : {},
-          socials: socialsStr ? JSON.parse(socialsStr) : {}
+          profile: user.data[3] ? JSON.parse(user.data[3]) : {},
+          socials: user.data[4] ? JSON.parse(user.data[4]) : {}
         };
       } else { output = { error: 'User not found' }; }
     }
     else if (action === 'getProfileStats') {
-      var row = findUserRow(sheet, params.username);
-      if (row !== -1) {
-        var statsStr = sheet.getRange(row, 6).getValue();
-        var activityStr = sheet.getRange(row, 7).getValue();
-        var notesStr = sheet.getRange(row, 8).getValue();
-        var streakStr = sheet.getRange(row, 9).getValue();
-
-        var stats = statsStr ? JSON.parse(statsStr) : {};
-        var activity = activityStr ? JSON.parse(activityStr) : [];
-        var notes = notesStr ? JSON.parse(notesStr) : [];
-        var streak = streakStr ? JSON.parse(streakStr) : { dates: [] };
+      var user = userDataMap[params.username.toLowerCase()];
+      if (user) {
+        var stats = user.data[5] ? JSON.parse(user.data[5]) : {};
+        var activity = user.data[6] ? JSON.parse(user.data[6]) : [];
+        var notes = user.data[7] ? JSON.parse(user.data[7]) : [];
+        var streak = user.data[8] ? JSON.parse(user.data[8]) : { dates: [] };
 
         if (!stats.panels) stats.panels = {};
         stats.panels.recently_watched = activity;
@@ -273,17 +254,15 @@ function doGet(e) {
       } else { output = { error: 'User not found' }; }
     }
     else if (action === 'getNotes') {
-      var row = findUserRow(sheet, params.username);
-      if (row !== -1) {
-        var notesStr = sheet.getRange(row, 8).getValue();
-        output = notesStr ? JSON.parse(notesStr) : [];
+      var user = userDataMap[params.username.toLowerCase()];
+      if (user) {
+        output = user.data[7] ? JSON.parse(user.data[7]) : [];
       } else { output = { error: 'User not found' }; }
     }
     else if (action === 'getNote') {
-      var row = findUserRow(sheet, params.username);
-      if (row !== -1) {
-        var notesStr = sheet.getRange(row, 8).getValue();
-        var notes = notesStr ? JSON.parse(notesStr) : [];
+      var user = userDataMap[params.username.toLowerCase()];
+      if (user) {
+        var notes = user.data[7] ? JSON.parse(user.data[7]) : [];
         var note = notes.find(function(n) { return n.video_id === params.videoId; });
         if (note) {
           output = note;
@@ -294,23 +273,27 @@ function doGet(e) {
       } else { output = { error: 'User not found' }; }
     }
     else if (action === 'getStreak') {
-      var row = findUserRow(sheet, params.username);
-      if (row !== -1) {
-        var streakStr = sheet.getRange(row, 9).getValue();
-        output = streakStr ? JSON.parse(streakStr) : { dates: [] };
+      var user = userDataMap[params.username.toLowerCase()];
+      if (user) {
+        output = user.data[8] ? JSON.parse(user.data[8]) : { dates: [] };
         output.status = 'success';
       } else { output = { error: 'User not found' }; }
     }
     else if (action === 'getLeaderboard') {
+      // Use Spreadsheet Cache for Leaderboard as it's expensive
+      var cache = CacheService.getScriptCache();
+      var cachedLeaderboard = cache.get("leaderboard_data");
+      if (cachedLeaderboard) {
+        return ContentService.createTextOutput(cachedLeaderboard).setMimeType(ContentService.MimeType.JSON);
+      }
+
       var data = sheet.getDataRange().getValues();
       var leaderboard = [];
       for (var i = 1; i < data.length; i++) {
         var uname = data[i][0];
         if (!uname) continue;
-        var pStr = data[i][3];
-        var sStr = data[i][5];
-        var profile = pStr ? JSON.parse(pStr) : {};
-        var stats = sStr ? JSON.parse(sStr) : {};
+        var profile = data[i][3] ? JSON.parse(data[i][3]) : {};
+        var stats = data[i][5] ? JSON.parse(data[i][5]) : {};
         
         leaderboard.push({
           username: uname,
@@ -323,6 +306,8 @@ function doGet(e) {
       }
       
       leaderboard.sort(function(a, b) { return b.xp_score - a.xp_score; });
+      var responseText = JSON.stringify(leaderboard);
+      cache.put("leaderboard_data", responseText, 60); // Cache for 60 seconds
       output = leaderboard;
     }
 
