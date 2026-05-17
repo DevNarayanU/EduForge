@@ -74,7 +74,7 @@ function doPost(e) {
         output = { error: 'Username already exists' };
       } else {
         var defaultProfile = { display_name: params.username, verified: true };
-        var defaultStats = { xp: { score: 10, level: 1 } };
+        var defaultStats = { xp: { score: 0, level: 1, watch_time_seconds: 0 } };
         sheet.appendRow([
           params.username,
           params.password, // Storing plaintext for demo purposes
@@ -141,17 +141,40 @@ function doPost(e) {
       var row = findUserRow(sheet, params.username);
       if (row !== -1) {
         var statsStr = sheet.getRange(row, 6).getValue();
-        var stats = statsStr ? JSON.parse(statsStr) : { xp: { score: 10, level: 1 } };
+        var stats = statsStr ? JSON.parse(statsStr) : { xp: { score: 0, level: 1 } };
         
-        // Basic XP calculation based on watch time
-        var xpGain = Math.floor(params.watch_time_seconds / 10); 
+        var streakStr = sheet.getRange(row, 9).getValue();
+        var streakObj = streakStr ? JSON.parse(streakStr) : { dates: [] };
+        
         if (!stats.xp) stats.xp = { score: 0, level: 1, watch_time_seconds: 0 };
+
+        // Advanced XP Formula logic
+        // score += (w * 0.02) * multiplier * min(1/(1 + e^((score//3600)*(score-15))), 1) + (min(w//1800, 1) * x1)
+        var w = params.watch_time_seconds || 0;
+        var s = streakObj.dates.length || 0;
+        var currentScore = stats.xp.score || 0;
+        var x1 = Math.floor(Math.random() * 60);
         
+        var multiplier = (Math.min(s - 1, 16) * 1.05);
+        if (multiplier < 1) multiplier = 1; // Ensure multiplier is at least 1
+
+        // Sigmoid-like decay component
+        var sigmoidTerm = 1 / (1 + Math.exp((Math.floor(currentScore / 3600)) * (currentScore - 15)));
+        var decayFactor = Math.min(sigmoidTerm, 1);
+        
+        var bonusTerm = (Math.floor(w / 1800) >= 1 ? 1 : 0) * x1;
+        
+        var xpGain = (w * 0.02) * multiplier * decayFactor + bonusTerm;
+        xpGain = Math.max(0, Math.floor(xpGain)); // Ensure non-negative integer
+
         stats.xp.score += xpGain;
-        stats.xp.watch_time_seconds = (stats.xp.watch_time_seconds || 0) + params.watch_time_seconds;
+        stats.xp.watch_time_seconds = (stats.xp.watch_time_seconds || 0) + w;
+        
+        // Leveling: Each level is 100 XP
         stats.xp.level = Math.floor(stats.xp.score / 100) + 1;
-        stats.xp.level_threshold = stats.xp.level * 100;
+        stats.xp.next_level_at = stats.xp.level * 100;
         stats.xp.progress = stats.xp.score % 100;
+        stats.xp.level_threshold = 100;
 
         sheet.getRange(row, 6).setValue(JSON.stringify(stats));
 
