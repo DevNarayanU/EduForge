@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -18,7 +17,7 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import Background from "../components/background/Background";
 import "./notes.css";
-import { API_BASE_URL } from "../config";
+import { fetchApi } from "../services/api";
 
 export default function NoteDetails({ user }) {
     const { owner, videoId } = useParams();
@@ -46,7 +45,7 @@ export default function NoteDetails({ user }) {
 
         const fetchNote = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/notes/${encodeURIComponent(owner)}/${encodeURIComponent(videoId)}`);
+                const response = await fetchApi('getNote', { username: owner, videoId: videoId }, 'GET');
                 if (response.ok) {
                     const data = await response.json();
                     setNote(data);
@@ -78,16 +77,12 @@ export default function NoteDetails({ user }) {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/notes`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    username: user,
-                    video_id: videoId,
-                    content: editedContent,
-                    title: editedTitle
-                })
-            });
+            const response = await fetchApi('saveNotes', {
+                username: user,
+                video_id: videoId,
+                content: editedContent,
+                title: editedTitle
+            }, 'POST');
 
             if (response.ok) {
                 setNote({

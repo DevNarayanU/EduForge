@@ -2,17 +2,11 @@ import React, { useState } from "react";
 import Background from "../components/background/Background";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+import { fetchApi } from "../services/api";
 
 function Signup(){
 
     const navigate = useNavigate();
-
-    // const handleSignUp = () =>{
-    //     navigate("/login")
-    // }
-
-    
 
     const [username,setusername] = useState("");
     const [password,setpassword] = useState("");
@@ -26,16 +20,9 @@ function Signup(){
         if (password !== repassword){
             return;
         }
-        else{
-            
-        }
         
         try{
-        const res = await fetch(`${API_BASE_URL}/signup`,{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({username,password}),
-        });
+        const res = await fetchApi('signup', { username, password }, 'POST');
         
         const data = await res.json();
         if (res.ok){
@@ -134,4 +121,3 @@ function Signup(){
 )
 }
 export default Signup;
-        

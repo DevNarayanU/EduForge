@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Background from "../components/background/Background";
 import Heatmap from "../components/Heatmap/Heatmap";
 const forgeLogo = "/forge.png";
-import { API_BASE_URL } from "../config";
+import { fetchApi } from "../services/api";
 
 import "./profile.css";
 
@@ -125,8 +125,8 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
 
       try {
         const [profileResponse, statsResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/profile/${encodeURIComponent(targetUser)}`),
-          fetch(`${API_BASE_URL}/profile/stats/${encodeURIComponent(targetUser)}`),
+          fetchApi('getProfile', { username: targetUser }, 'GET'),
+          fetchApi('getProfileStats', { username: targetUser }, 'GET'),
         ]);
 
         const profilePayload = await profileResponse.json();
@@ -245,10 +245,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
     setMessage("");
 
     try {
-      const profileResponse = await fetch(`${API_BASE_URL}/profile/update`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const profileResponse = await fetchApi('updateProfile', {
           username: user,
           display_name: form.display_name,
           bio: form.bio,
@@ -258,8 +255,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
           timezone: form.timezone,
           website: form.website,
           skills: form.skills,
-        }),
-      });
+      }, 'POST');
 
       const profilePayload = await profileResponse.json();
 
@@ -269,14 +265,10 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
 
       const effectiveUsername = profilePayload.username || form.display_name || user;
 
-      const socialsResponse = await fetch(`${API_BASE_URL}/profile/socials`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const socialsResponse = await fetchApi('updateSocials', {
           username: effectiveUsername,
           socials: formSocials,
-        }),
-      });
+      }, 'POST');
 
       const socialsPayload = await socialsResponse.json();
 

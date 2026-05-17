@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./video.css";
 import Custom_player from "../customplayer/Custom_player";
-import { API_BASE_URL } from "../../config";
+import { fetchApi } from "../../services/api";
 
 function formatTime(totalSeconds) {
     const h = Math.floor(totalSeconds / 3600);
@@ -59,20 +59,13 @@ export default function Video({
         watchTimeRef.current = totalMeasured;
 
         try {
-            await fetch(`${API_BASE_URL}/profile/xp`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    username: user,
-                    watch_time_seconds: toSync,
-                    video_id: video.id.videoId,
-                    title: video.snippet.title,
-                    channel_title: video.snippet.channelTitle
-                }),
-                keepalive: true
-            });
+            await fetchApi('updateProfileXp', {
+                username: user,
+                watch_time_seconds: toSync,
+                video_id: video.id.videoId,
+                title: video.snippet.title,
+                channel_title: video.snippet.channelTitle
+            }, 'POST');
         } catch (err) {
             console.error("Error syncing XP:", err);
             // Rollback on failure if we want to retry next time
@@ -133,7 +126,7 @@ export default function Video({
         if (user && video.id.videoId) {
             setNotes("");
 
-            fetch(`${API_BASE_URL}/notes/${user}/${video.id.videoId}`)
+            fetchApi('getNote', { username: user, videoId: video.id.videoId }, 'GET')
                 .then((res) => res.json())
                 .then((data) => {
                     const fetchedContent = data.content || "";
@@ -149,21 +142,12 @@ export default function Video({
         setIsSaving(true);
 
         try {
-            const response = await fetch(
-                `${API_BASE_URL}/notes`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        username: user,
-                        video_id: video.id.videoId,
-                        content: notes,
-                        title: video.snippet.title
-                    })
-                }
-            );
+            const response = await fetchApi('saveNotes', {
+                username: user,
+                video_id: video.id.videoId,
+                content: notes,
+                title: video.snippet.title
+            }, 'POST');
 
             if (response.ok) {
                 console.log("Notes saved successfully");

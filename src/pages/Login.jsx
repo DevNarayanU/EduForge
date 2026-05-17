@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Background from "../components/background/Background";
 import { Link, useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+import { fetchApi } from "../services/api";
 
 function Login({ setuser, user }) {
 
@@ -15,11 +15,7 @@ function Login({ setuser, user }) {
         setError("");
 
         try {
-            const res = await fetch(`${API_BASE_URL}/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-            });
+            const res = await fetchApi('login', { username, password }, 'POST');
 
             const data = await res.json();
 
@@ -113,4 +109,4 @@ function Login({ setuser, user }) {
     );
 }
 
-export default Login; 
+export default Login;
