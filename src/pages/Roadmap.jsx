@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -23,7 +23,7 @@ import './Roadmap.css';
 const initialNodes = [];
 const initialEdges = [];
 
-const Roadmap = ({ user, profileImage }) => {
+export default function Roadmap({ user, profileImage }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [skill, setSkill] = useState('');
@@ -35,10 +35,37 @@ const Roadmap = ({ user, profileImage }) => {
   const [message, setMessage] = useState('');
   const [selectedNode, setSelectedNode] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [recentNotes, setRecentNotes] = useState([]);
   
   // Custom Player State
   const [currentVideo, setCurrentVideo] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const loadSpecificRoadmap = (roadmap) => {
+    setNodes(roadmap.nodes || []);
+    setEdges(roadmap.edges || []);
+    setRoadmapTitle(roadmap.title || "");
+    setCurrentRoadmapId(roadmap.id);
+    setSkill(roadmap.skill || "");
+    setSelectedNode(null);
+    setIsPlaying(false);
+  };
+
+  useEffect(() => {
+    const loadNotes = async () => {
+      if (!user) return;
+      try {
+        const response = await fetchApi('getNotes', { username: user }, 'GET', { useCache: true });
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setRecentNotes(data.slice(-5).reverse());
+        }
+      } catch (e) {
+        console.error("Failed to load notes", e);
+      }
+    };
+    loadNotes();
+  }, [user]);
 
   useEffect(() => {
     const loadRoadmaps = async () => {
@@ -69,16 +96,6 @@ const Roadmap = ({ user, profileImage }) => {
     loadRoadmaps();
   }, [user]);
 
-  const loadSpecificRoadmap = (roadmap) => {
-    setNodes(roadmap.nodes || []);
-    setEdges(roadmap.edges || []);
-    setRoadmapTitle(roadmap.title || "");
-    setCurrentRoadmapId(roadmap.id);
-    setSkill(roadmap.skill || "");
-    setSelectedNode(null);
-    setIsPlaying(false);
-  };
-
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge({ ...params, animated: true, markerEnd: { type: MarkerType.ArrowClosed } }, eds)),
     [setEdges]
@@ -89,27 +106,6 @@ const Roadmap = ({ user, profileImage }) => {
     setIsEditing(false);
   }, []);
 
-  const getYouTubeId = (url) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-  };
-
-  const handleResourceClick = (res, e) => {
-    if (res.type === 'video') {
-      const videoId = getYouTubeId(res.url);
-      if (videoId) {
-        e.preventDefault();
-        setCurrentVideo({
-          id: { videoId },
-          snippet: { title: res.title, channelTitle: "Course Resource" }
-        });
-        setIsPlaying(true);
-        return;
-      }
-    }
-  };
-
   const generateRoadmap = async (e) => {
     e.preventDefault();
     if (!skill.trim()) return;
@@ -117,7 +113,6 @@ const Roadmap = ({ user, profileImage }) => {
     setIsGenerating(true);
     setMessage('Forging Learning Path...');
     setSelectedNode(null);
-    setIsPlaying(false);
 
     try {
       const response = await fetchApi('generateRoadmap', { username: user, skill }, 'POST', { component: 'roadmap' });
@@ -202,7 +197,6 @@ const Roadmap = ({ user, profileImage }) => {
       setRoadmapTitle('');
       setCurrentRoadmapId(null);
       setSelectedNode(null);
-      setIsPlaying(false);
       setMessage('New canvas created.');
     }
   };
@@ -291,6 +285,25 @@ const Roadmap = ({ user, profileImage }) => {
               </div>
             )}
 
+            {recentNotes.length > 0 && (
+              <div className="saved-roadmaps-list">
+                <h3>Recent Notes</h3>
+                <div className="roadmaps-scroll">
+                  {recentNotes.map((note) => (
+                    <div key={note.video_id} className="roadmap-list-item">
+                      <FiEdit3 />
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#fff' }}>{note.title}</span>
+                        <span style={{ fontSize: '0.7rem', color: '#555', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px' }}>
+                          {note.content}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="roadmap-actions">
               <button onClick={saveRoadmap}><FiSave /> Save Roadmap</button>
               <button onClick={() => window.print()}><FiDownload /> Export</button>
@@ -331,7 +344,6 @@ const Roadmap = ({ user, profileImage }) => {
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="resource-item"
-                      onClick={(e) => handleResourceClick(res, e)}
                     >
                       {res.type === 'video' ? <FiYoutube className="res-icon video" /> : <FiGlobe className="res-icon site" />}
                       <div className="res-info">
@@ -358,21 +370,6 @@ const Roadmap = ({ user, profileImage }) => {
         </div>
 
         <div className="roadmap-canvas">
-          {isPlaying && currentVideo && (
-            <div className="embedded-player-overlay">
-              <div className="player-container">
-                <button className="close-player" onClick={() => setIsPlaying(false)}><FiX /></button>
-                <Video 
-                  video={currentVideo} 
-                  user={user} 
-                  setisplaying={setIsPlaying}
-                  setcurrentVideo={setCurrentVideo}
-                  data={[]} 
-                />
-              </div>
-            </div>
-          )}
-          
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -381,6 +378,7 @@ const Roadmap = ({ user, profileImage }) => {
             onConnect={onConnect}
             onNodeClick={onNodeClick}
             fitView
+            fitViewOptions={{ padding: 0.2 }}
             colorMode="dark"
           >
             <Background color="#111" gap={25} variant="dots" />
@@ -395,6 +393,4 @@ const Roadmap = ({ user, profileImage }) => {
       </div>
     </div>
   );
-};
-
-export default Roadmap;
+}

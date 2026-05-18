@@ -255,9 +255,19 @@ function doPost(e) {
           var roadmapData = JSON.parse(result.choices[0].message.content);
           
           roadmapData.nodes = roadmapData.nodes.map(function(n, idx) {
-            n.position = { x: 250, y: idx * 150 };
+            var row = Math.floor(idx / 3);
+            var col = idx % 3;
+            var xPos, yPos;
+            
+            if (row % 2 === 0) {
+              xPos = col * 350; // Left to Right
+            } else {
+              xPos = (2 - col) * 350; // Right to Left
+            }
+            yPos = row * 250;
+
+            n.position = { x: xPos, y: yPos };
             n.type = 'default';
-            // Ensure resources are stored in node data for React Flow
             n.data = { label: n.label, resources: n.resources || [] };
             return n;
           });
