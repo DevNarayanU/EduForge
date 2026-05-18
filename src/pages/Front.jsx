@@ -95,7 +95,7 @@ function Front({user,input, setinput, profileImage}) {
                             <span>Notes</span>
                         </Link>
                         <Link to="/profile">
-                            <img className="profile-image" src={profileImage} alt="profile image" />
+                            {profileImage && <img className="profile-image" src={profileImage} alt="profile" />}
                         </Link>
                     </div>
                 )

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
 const forgeLogo = "/forge.png";
 import searchIcon from "../../assets/search.svg";
-import { FiFileText, FiAward } from "react-icons/fi";
+import { FiFileText, FiAward, FiMap } from "react-icons/fi";
 
 const allowedChannels =[
                     "freeCodeCamp.org","Programming with Mosh","Traversy Media","The Net Ninja","Fireship","Corey Schafer",
@@ -40,8 +40,38 @@ export default function Top_panel({ data, setdata, setisplaying, initialQuery, u
     const [input,setinput] = useState(initialQuery||"");
     const [query,setquery] = useState(initialQuery||"");
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [backendStatus, setBackendStatus] = useState('loading'); // loading, online, offline
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        // Check backend status
+        const checkBackend = async () => {
+            try {
+                // Using a simple GET request to check if the script is reachable
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}?action=ping`);
+                if (res.ok) setBackendStatus('online');
+                else setBackendStatus('offline');
+            } catch {
+                setBackendStatus('offline');
+            }
+        };
+
+        checkBackend();
+        const interval = setInterval(checkBackend, 30000); // Check every 30s
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+            clearInterval(interval);
+        };
+    }, []);
 
     const toProfile = () =>{
         navigate("/profile");
@@ -117,6 +147,17 @@ export default function Top_panel({ data, setdata, setisplaying, initialQuery, u
             </form>
 
             <div className="top-panel-actions">
+                <div className="status-indicators">
+                    <div 
+                        className={`status-dot ${isOnline ? 'online' : 'offline'}`} 
+                        title={isOnline ? 'Internet Online' : 'Internet Offline'}
+                    />
+                    <div 
+                        className={`status-dot ${backendStatus === 'online' ? 'online' : (backendStatus === 'loading' ? 'loading' : 'offline')}`} 
+                        title={`Backend: ${backendStatus}`}
+                    />
+                </div>
+
                 <button 
                     className="mobile-search-toggle" 
                     onClick={() => setIsSearchOpen(true)}
@@ -149,6 +190,14 @@ export default function Top_panel({ data, setdata, setisplaying, initialQuery, u
                     title="Leaderboard"
                 >
                     <FiAward size={20} />
+                </button>
+
+                <button 
+                    className="top-panel-roadmap-btn" 
+                    onClick={() => navigate("/roadmap")}
+                    title="AI Roadmap"
+                >
+                    <FiMap size={20} />
                 </button>
 
                 <button className="profile" onClick={toProfile}>

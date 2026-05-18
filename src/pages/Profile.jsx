@@ -204,6 +204,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
 
   const recentVideos = stats.panels?.recently_watched || [];
   const recentNotes = stats.panels?.recent_notes || [];
+  const savedRoadmaps = stats.panels?.roadmaps || [];
   const levelThreshold = stats.xp?.level_threshold || 0;
   const xpPercent = levelThreshold > 0 ? Math.min(100, ((stats.xp?.progress || 0) / levelThreshold) * 100) : 0;
 
@@ -553,6 +554,46 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
               </div>
               <Heatmap username={profile.username || targetUser} />
             </section>
+
+            {isOwnProfile && (
+              <section className="profile-card profile-list-card">
+                <div className="profile-section-heading">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div>
+                      <h2>Saved Roadmaps</h2>
+                      <p>Your custom learning paths and generated canvases.</p>
+                    </div>
+                    <button 
+                      className="profile-secondary-button" 
+                      onClick={() => navigate("/roadmap")}
+                      style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                    >
+                      Open Canvas
+                    </button>
+                  </div>
+                </div>
+                <div className="profile-activity-list">
+                  {savedRoadmaps.length > 0 ? (
+                    savedRoadmaps.map((item) => (
+                      <article 
+                        key={item.id} 
+                        className="clickable-item"
+                        onClick={() => navigate("/roadmap")}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div>
+                          <h3>{item.title}</h3>
+                          <p>{item.skill || "Custom Path"}</p>
+                        </div>
+                        <span>{item.nodes?.length || 0} Steps</span>
+                      </article>
+                    ))
+                  ) : (
+                    <EmptyState label="No roadmaps saved yet." />
+                  )}
+                </div>
+              </section>
+            )}
 
             {isOwnProfile && (
               <section className="profile-card profile-list-card">

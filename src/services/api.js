@@ -5,6 +5,14 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 2000; // 2 seconds
 
+// Version control for cache invalidation
+export const COMPONENT_VERSIONS = {
+    app: '1.0.1',
+    roadmap: '1.0.0',
+    profile: '1.0.0',
+    leaderboard: '1.0.0'
+};
+
 // --- State Management for Queue and Cache ---
 const requestQueue = [];
 let isProcessingQueue = false;
@@ -18,7 +26,8 @@ export const fetchApi = async (action, data = {}, method = 'GET', options = {}) 
         useCache = false, 
         optimistic = false, 
         queue = false,
-        debounceKey = null 
+        debounceKey = null,
+        component = 'app'
     } = options;
 
     const cacheKey = `cache_${action}_${JSON.stringify(data)}`;
@@ -28,9 +37,12 @@ export const fetchApi = async (action, data = {}, method = 'GET', options = {}) 
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
             const parsed = JSON.parse(cached);
-            if (Date.now() - parsed.timestamp < CACHE_TTL) {
+            const currentVersion = COMPONENT_VERSIONS[component] || '1.0.0';
+            
+            // Check if cache is still valid by TTL and Version
+            if (Date.now() - parsed.timestamp < CACHE_TTL && parsed.version === currentVersion) {
                 // Background refresh: don't await, just update cache
-                performRequest(action, data, method, cacheKey);
+                performRequest(action, data, method, cacheKey, 1, currentVersion);
                 return {
                     ok: true,
                     json: async () => parsed.data,
@@ -56,7 +68,8 @@ export const fetchApi = async (action, data = {}, method = 'GET', options = {}) 
         return pendingRequests.get(pendingKey);
     }
 
-    const requestPromise = performRequest(action, data, method, useCache ? cacheKey : null);
+    const currentVersion = COMPONENT_VERSIONS[options.component || 'app'] || '1.0.0';
+    const requestPromise = performRequest(action, data, method, useCache ? cacheKey : null, 1, currentVersion);
     pendingRequests.set(pendingKey, requestPromise);
     
     try {
@@ -70,7 +83,7 @@ export const fetchApi = async (action, data = {}, method = 'GET', options = {}) 
 /**
  * The actual fetch implementation with retry logic.
  */
-async function performRequest(action, data, method, cacheKey, attempt = 1) {
+async function performRequest(action, data, method, cacheKey, attempt = 1, version = '1.0.0') {
     let url = API_BASE_URL;
     let fetchOptions = {};
 
@@ -95,7 +108,8 @@ async function performRequest(action, data, method, cacheKey, attempt = 1) {
             if (cacheKey) {
                 localStorage.setItem(cacheKey, JSON.stringify({
                     data: result,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    version: version
                 }));
             }
             return { ok: true, json: async () => result, status: 200 };

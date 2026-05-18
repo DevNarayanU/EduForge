@@ -209,6 +209,91 @@ function doPost(e) {
         output = { status: 'success' };
       } else { output = { error: 'User not found' }; }
     }
+    else if (action === 'generateRoadmap') {
+      var groqApiKey = PropertiesService.getScriptProperties().getProperty('GROQ_API_KEY');
+      if (!groqApiKey) {
+        output = { error: 'Groq API key not configured in ScriptProperties' };
+      } else {
+        var skill = params.skill;
+        var url = "https://api.groq.com/openai/v1/chat/completions";
+        
+        var prompt = "Create a professional, highly detailed learning roadmap for '" + skill + "' in JSON format.\n" +
+                     "For each node, provide exactly 2 high-quality resources:\n" +
+                     "1. One 'video' resource: Search for a verified, highly-rated YouTube video and return its full URL. Ensure the video title is accurate.\n" +
+                     "2. One 'article' resource: Provide a link to official documentation (e.g., MDN, Python.org) or a top-tier tutorial site (e.g., freeCodeCamp).\n" +
+                     "Constraint: Max 8 nodes. Output ONLY the JSON object.\n" +
+                     "Format: { \"nodes\": [{\"id\": \"1\", \"label\": \"Topic\", \"resources\": [{\"type\": \"video\", \"title\": \"...\", \"url\": \"...\"}, {\"type\": \"article\", \"title\": \"...\", \"url\": \"...\"}]}], \"edges\": [{\"id\": \"e1-2\", \"source\": \"1\", \"target\": \"2\"}] }.";
+
+        var payload = {
+          messages: [
+            { role: "system", content: "You are an expert educator. Return only valid JSON." },
+            { role: "user", content: prompt }
+          ],
+          model: "llama-3.3-70b-versatile",
+          temperature: 0.3,
+          max_tokens: 3000,
+          response_format: { type: "json_object" }
+        };
+        
+        var response = UrlFetchApp.fetch(url, {
+          method: "post",
+          headers: {
+            "Authorization": "Bearer " + groqApiKey,
+            "Content-Type": "application/json"
+          },
+          payload: JSON.stringify(payload),
+          muteHttpExceptions: true
+        });
+        
+        var responseCode = response.getResponseCode();
+        var responseText = response.getContentText();
+        
+        if (responseCode !== 200) {
+          output = { error: "Groq API Error (" + responseCode + "): " + responseText };
+        } else {
+          var result = JSON.parse(responseText);
+          var roadmapData = JSON.parse(result.choices[0].message.content);
+          
+          roadmapData.nodes = roadmapData.nodes.map(function(n, idx) {
+            n.position = { x: 250, y: idx * 150 };
+            n.type = 'default';
+            // Ensure resources are stored in node data for React Flow
+            n.data = { label: n.label, resources: n.resources || [] };
+            return n;
+          });
+          
+          output = { status: 'success', roadmap: roadmapData };
+        }
+      }
+    }
+    else if (action === 'saveRoadmap') {
+      if (row !== -1) {
+        var userData = getUserData(sheet)[params.username.toLowerCase()].data;
+        var existingRoadmaps = userData[9] ? JSON.parse(userData[9]) : [];
+        if (!Array.isArray(existingRoadmaps)) {
+           existingRoadmaps = existingRoadmaps ? [existingRoadmaps] : [];
+        }
+
+        var newRoadmap = params.roadmap;
+        newRoadmap.id = newRoadmap.id || new Date().getTime();
+        newRoadmap.title = params.title || params.skill || "Untitled Roadmap";
+        newRoadmap.updated_at = new Date().toISOString();
+
+        var index = existingRoadmaps.findIndex(function(r) { return r.id === newRoadmap.id; });
+        if (index !== -1) {
+          existingRoadmaps[index] = newRoadmap;
+        } else {
+          existingRoadmaps.push(newRoadmap);
+        }
+
+        var lastCol = sheet.getLastColumn();
+        if (lastCol < 10) {
+           sheet.getRange(1, 10).setValue("roadmaps");
+        }
+        sheet.getRange(row, 10).setValue(JSON.stringify(existingRoadmaps));
+        output = { status: 'success', roadmaps: existingRoadmaps };
+      } else { output = { error: 'User not found' }; }
+    }
 
   } catch (err) {
     output = { status: 'error', error: err.toString() };
@@ -236,6 +321,9 @@ function doGet(e) {
         };
       } else { output = { error: 'User not found' }; }
     }
+    else if (action === 'ping') {
+      output = { status: 'success', message: 'pong' };
+    }
     else if (action === 'getProfileStats') {
       var user = userDataMap[params.username.toLowerCase()];
       if (user) {
@@ -243,12 +331,14 @@ function doGet(e) {
         var activity = user.data[6] ? JSON.parse(user.data[6]) : [];
         var notes = user.data[7] ? JSON.parse(user.data[7]) : [];
         var streak = user.data[8] ? JSON.parse(user.data[8]) : { dates: [] };
+        var roadmaps = user.data[9] ? JSON.parse(user.data[9]) : [];
 
         if (!stats.panels) stats.panels = {};
         stats.panels.recently_watched = activity;
         stats.panels.recent_notes = notes.slice(-5).map(function(n) {
            return { id: n.video_id, reference_id: n.video_id, title: n.title, subtitle: 'Note', status: 'Saved' };
         });
+        stats.panels.roadmaps = Array.isArray(roadmaps) ? roadmaps : (roadmaps ? [roadmaps] : []);
         stats.streak = streak.dates.length;
 
         output = stats;
@@ -279,6 +369,15 @@ function doGet(e) {
       if (user) {
         output = user.data[8] ? JSON.parse(user.data[8]) : { dates: [] };
         output.status = 'success';
+      } else { output = { error: 'User not found' }; }
+    }
+    else if (action === 'getRoadmap') {
+      var user = userDataMap[params.username.toLowerCase()];
+      if (user) {
+        output = {
+          status: 'success',
+          roadmap: user.data[9] ? JSON.parse(user.data[9]) : null
+        };
       } else { output = { error: 'User not found' }; }
     }
     else if (action === 'getLeaderboard') {
