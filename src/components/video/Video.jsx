@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./video.css";
 import Custom_player from "../customplayer/Custom_player";
 import { fetchApi } from "../../services/api";
+import { fetchYoutube } from "../../services/youtube";
 
 function formatTime(totalSeconds) {
     const h = Math.floor(totalSeconds / 3600);
@@ -80,16 +81,11 @@ export default function Video({
             watchTimeRef.current = 0;
             syncedWatchTimeRef.current = 0;
             const fetchVideoDetails = async () => {
-                const url = "https://www.googleapis.com/youtube/v3/videos";
-                const params = new URLSearchParams({
-                    part: "snippet",
-                    id: videoId,
-                    key: import.meta.env.VITE_YOUTUBE_API_KEY
-                });
-
                 try {
-                    const res = await fetch(`${url}?${params}`);
-                    const data = await res.json();
+                    const data = await fetchYoutube('videos', {
+                        part: "snippet",
+                        id: videoId
+                    });
                     if (data.items && data.items.length > 0) {
                         setFullDescription(data.items[0].snippet.description);
                     } else {

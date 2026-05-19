@@ -54,3 +54,21 @@
         padding: 5px 12px;
     }
 }
+
+.no-results {
+    width: 100%;
+    padding: 100px 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: "Trispace", sans-serif;
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.no-results p {
+    max-width: 500px;
+    line-height: 1.6;
+}
+

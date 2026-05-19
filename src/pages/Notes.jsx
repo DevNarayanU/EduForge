@@ -14,6 +14,7 @@ import Background from "../components/background/Background";
 const forgeLogo = "/forge.png";
 import "./notes.css";
 import { fetchApi } from "../services/api";
+import StatusDots from "../components/status/StatusDots";
 
 const NoteCard = ({ note, onClick }) => {
     const preview = note.content ? note.content.substring(0, 100) + (note.content.length > 100 ? "..." : "") : "No content";
@@ -102,9 +103,12 @@ export default function Notes({ user, profileImage }) {
             <div className="notes-container">
                 <header className="notes-header">
                     <div className="notes-title-section">
-                        <button className="btn-icon" onClick={() => navigate("/profile")} style={{ marginBottom: '1rem' }}>
-                            <FiArrowLeft /> Back to Profile
-                        </button>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <button className="btn-icon" onClick={() => navigate("/profile")} style={{ marginBottom: 0 }}>
+                                <FiArrowLeft /> Back to Profile
+                            </button>
+                            <StatusDots />
+                        </div>
                         <h1>My Forge Notes</h1>
                         <p>Total {notes.length} notes captured from your learning sessions</p>
                     </div>

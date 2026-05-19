@@ -1,0 +1,24 @@
+.status-indicators {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.status-dot.online {
+    background-color: #22c55e;
+}
+
+.status-dot.offline {
+    background-color: #ef4444;
+}
+
+.status-dot.loading {
+    background-color: #94a3b8;
+}

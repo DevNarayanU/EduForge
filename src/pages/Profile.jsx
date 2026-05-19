@@ -5,6 +5,7 @@ import Background from "../components/background/Background";
 import Heatmap from "../components/Heatmap/Heatmap";
 const forgeLogo = "/forge.png";
 import { fetchApi } from "../services/api";
+import StatusDots from "../components/status/StatusDots";
 
 import "./profile.css";
 
@@ -319,6 +320,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
             <h1>{profile.display_name || targetUser}</h1>
           </div>
           <div className="profile-topbar-actions">
+            <StatusDots />
             <button type="button" className="profile-secondary-button" onClick={() => navigate("/home")}>
               <span>←</span> Back
             </button>

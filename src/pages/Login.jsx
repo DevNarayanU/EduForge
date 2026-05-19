@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Background from "../components/background/Background";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchApi } from "../services/api";
+import StatusDots from "../components/status/StatusDots";
 
 function Login({ setuser, user }) {
 
@@ -103,6 +104,10 @@ function Login({ setuser, user }) {
 
                         <button type="submit">Log In</button>
                     </form>
+
+                    <div className="login-status">
+                        <StatusDots />
+                    </div>
                 </div>
             </div>
         </>

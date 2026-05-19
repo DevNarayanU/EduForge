@@ -6,6 +6,7 @@ import Background from "../components/background/Background";
 const forgeLogo = "/forge.png";
 import "./leaderboard.css";
 import { fetchApi } from "../services/api";
+import StatusDots from "../components/status/StatusDots";
 
 const LeaderboardRow = ({ user, rank, onClick }) => (
     <div className="leaderboard-row" onClick={() => onClick(user.username)}>
@@ -80,9 +81,12 @@ export default function Leaderboard({ user }) {
             <Background />
             
             <div className="leaderboard-container">
-                <button className="btn-icon" onClick={() => navigate("/home")} style={{ marginBottom: '2rem' }}>
-                    <FiArrowLeft /> Back to Home
-                </button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                    <button className="btn-icon" onClick={() => navigate("/home")} style={{ marginBottom: 0 }}>
+                        <FiArrowLeft /> Back to Home
+                    </button>
+                    <StatusDots />
+                </div>
 
                 <header className="leaderboard-header">
                     <h1>Hall of Flame</h1>

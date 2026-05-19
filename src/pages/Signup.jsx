@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Background from "../components/background/Background";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchApi } from "../services/api";
+import StatusDots from "../components/status/StatusDots";
 
 function Signup(){
 
@@ -98,7 +99,7 @@ function Signup(){
                     value={repassword}
                     onChange={(e) => setrepassword(e.target.value)}
                     required
-                    /> .
+                    /> 
 
                     {error && 
                     !error.toLowerCase().includes("user") && (
@@ -109,6 +110,15 @@ function Signup(){
                     )}         
                     <button type="button" onClick={handleSignUp}>Sign up</button>
                 </form>
+
+                <div className="signup-footer-links">
+                    <Link to="/about">About</Link>
+                    <Link to="/terms">User Agreement</Link>
+                </div>
+                
+                <div className="signup-status">
+                    <StatusDots />
+                </div>
                 
             </div>
             

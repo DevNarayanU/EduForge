@@ -6,10 +6,10 @@ import { useNavigate } from "react-router-dom";
 const forgeLogo = "/forge.png";
 import searchIcon from "../assets/search.svg";
 import { FiFileText, FiAward } from "react-icons/fi";
+import StatusDots from "../components/status/StatusDots";
 
 
 function Front({user,input, setinput, profileImage}) {
-    console.log(user+"hello");
     const location = useLocation();
     const [showToast, setShowToast] = useState(false);
     const [toastMsg, setToastMsg] = useState("");
@@ -64,7 +64,7 @@ function Front({user,input, setinput, profileImage}) {
                                 type="search"
                                 value={input}
                                 onChange={(e) => setinput(e.target.value)}
-                                placeholder="Search skills ..."
+                                placeholder="Search skills"
                                 className="front-search"
                             />
                             <button type="submit" className="front-search-button">
@@ -73,6 +73,10 @@ function Front({user,input, setinput, profileImage}) {
                         </div>
                     </form>
                 </div>
+            </div>
+
+            <div className="front-status-container">
+                <StatusDots />
             </div>
             {
                 !user && (

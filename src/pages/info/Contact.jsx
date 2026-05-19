@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiMail, FiClock, FiMessageCircle, FiSend } from 'react-icons/fi';
 import Background from '../../components/background/Background';
+import StatusDots from '../../components/status/StatusDots';
 import './info.css';
 
 const Contact = () => {
@@ -28,9 +29,12 @@ const Contact = () => {
         <div className="info-page">
             <Background />
             <div className="info-container">
-                <button className="back-top" onClick={() => navigate(-1)}>
-                    <FiArrowLeft /> Back
-                </button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                    <button className="back-top" onClick={() => navigate(-1)} style={{ marginBottom: 0 }}>
+                        <FiArrowLeft /> Back
+                    </button>
+                    <StatusDots />
+                </div>
 
                 <header className="info-header">
                     <h1>Get in Touch</h1>

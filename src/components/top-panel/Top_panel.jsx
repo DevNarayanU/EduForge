@@ -4,74 +4,16 @@ import { useNavigate } from "react-router-dom";
 const forgeLogo = "/forge.png";
 import searchIcon from "../../assets/search.svg";
 import { FiFileText, FiAward, FiMap } from "react-icons/fi";
-
-const allowedChannels =[
-                    "freeCodeCamp.org","Programming with Mosh","Traversy Media","The Net Ninja","Fireship","Corey Schafer",
-                    "MIT OpenCourseWare","Harvard CS50","Khan Academy","CrashCourse","3Blue1Brown","Veritasium",
-                    "Numberphile","Computerphile","Academind","edureka!","Simplilearn","Great Learning",
-                    "CodeWithHarry","Apna College","Gate Smashers","Neso Academy","Unacademy","Physics Wallah",
-                    "Study IQ Education","Learn Engineering","Real Engineering","Practical Machinist",
-                    "Stanford Online","YaleCourses","Oxford Online","Google Developers","Microsoft Developer",
-                    "Amazon Web Services","IBM Technology",
-
-                    "Unacademy NEET","Aakash BYJU'S NEET","NEETprep","Allen Career Institute",
-                    "Vedantu NEET Made Ejee","ExamFear Education","Etoos Education","Career Point NEET","MTG Learning Media",
-
-                    "Unacademy JEE","Aakash BYJU'S JEE","Vedantu JEE Made Ejee","Competishun","MathonGo",
-                    "Mohit Tyagi","Career Point JEE","FIITJEE","Resonance","JEE Wallah","Narayana IIT JEE",
-
-                    "Made Easy","ACE Academy","Unacademy GATE","Engineering Funda","GATE Academy Plus","Exergic","NPTEL","GeeksforGeeks",
-
-                    "Adda247","Testbook","Gradeup (BYJU'S Exam Prep)","BYJU'S Exam Prep","Oliveboard","Wifistudy","Exampur",
-                    "Utkarsh Classes","Let's Crack UPSC CSE","Vision IAS","Drishti IAS","Insights IAS","ForumIAS",
-                    "ClearIAS","StudyIQ IAS","Shankar IAS Academy","Plutus IAS","Rau's IAS",
-
-                    "LearnNext","Math Antics","Science Channel","National Geographic","Discovery Channel","Peekaboo Kidz",
-                    "Homeschool Pop","Smile and Learn","Fun Kids Learning","Easy Peasy Homeschool","Free School",
-
-                    "UC Berkeley","Caltech","Princeton University","Columbia University","Cornell University",
-                    "Carnegie Mellon University","University of Cambridge","University of Oxford","ETH Zurich",
-
-                    "Harvard University","CERN","NASA","Google Research","Microsoft Research","DeepMind","OpenAI",
-                    "IBM Research","Allen Institute for AI","Max Planck Society","Nature","Science Magazine","arXiv"
-                    ];
+import { fetchYoutube } from "../../services/youtube";
+import { ALLOWED_CHANNELS } from "../../constants";
+import StatusDots from "../status/StatusDots";
 
 export default function Top_panel({ data, setdata, setisplaying, initialQuery, user, profileImage }){
     const [input,setinput] = useState(initialQuery||"");
     const [query,setquery] = useState(initialQuery||"");
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isOnline, setIsOnline] = useState(navigator.onLine);
-    const [backendStatus, setBackendStatus] = useState('loading'); // loading, online, offline
 
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const handleOnline = () => setIsOnline(true);
-        const handleOffline = () => setIsOnline(false);
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-
-        // Check backend status
-        const checkBackend = async () => {
-            try {
-                // Using a simple GET request to check if the script is reachable
-                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}?action=ping`);
-                if (res.ok) setBackendStatus('online');
-                else setBackendStatus('offline');
-            } catch {
-                setBackendStatus('offline');
-            }
-        };
-
-        checkBackend();
-        const interval = setInterval(checkBackend, 30000); // Check every 30s
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-            clearInterval(interval);
-        };
-    }, []);
 
     const toProfile = () =>{
         navigate("/profile");
@@ -89,42 +31,38 @@ export default function Top_panel({ data, setdata, setisplaying, initialQuery, u
         if (!input.trim()) return;
         setquery(input);
         setIsSearchOpen(false);
-        console.log(query)
     }
 
     useEffect(()=> {
         if (!query.trim()) return; 
 
         async function getData(query){
-            const url = "https://www.googleapis.com/youtube/v3/search";
-            const params = new URLSearchParams({
-                part: "snippet",
-                q: query,
-                type: "video",
-                maxResults: 40,
-                key: import.meta.env.VITE_YOUTUBE_API_KEY
-                });
-        
             try {
-                const res = await fetch(`${url}?${params}`);
-                const data = await res.json();
-                console.log(data.items);
+                const data = await fetchYoutube('search', {
+                    part: "snippet",
+                    q: query,
+                    type: "video",
+                    maxResults: 30
+                });
+                
+                console.log("Raw YouTube data:", data.items);
                 
                 const filtered = (data.items || []).filter(item =>
-                    allowedChannels.some(ch =>
+                    ALLOWED_CHANNELS.some(ch =>
                         item.snippet.channelTitle.trim().toLowerCase() === ch.trim().toLowerCase()
                     )
-                    );
+                );
+
+                console.log("Filtered data count:", filtered.length);
+                
                 setisplaying(false);
                 setdata(filtered);
                 
             } catch (err) {
-                console.error(err);
+                console.error("YouTube search error:", err);
             }
-                
         }
         getData(query)
-        console.log("api called")
     },[query])
 
     return(
@@ -138,7 +76,7 @@ export default function Top_panel({ data, setdata, setisplaying, initialQuery, u
                     <input type="search" 
                     value={input}
                     onChange={(e) => setinput(e.target.value)}
-                    placeholder="Search skills ..."
+                    placeholder="Search skills"
                     className="home-search" />
                     <button type="submit" className="search-button">
                         <img src={searchIcon} alt="search" />
@@ -147,16 +85,7 @@ export default function Top_panel({ data, setdata, setisplaying, initialQuery, u
             </form>
 
             <div className="top-panel-actions">
-                <div className="status-indicators">
-                    <div 
-                        className={`status-dot ${isOnline ? 'online' : 'offline'}`} 
-                        title={isOnline ? 'Internet Online' : 'Internet Offline'}
-                    />
-                    <div 
-                        className={`status-dot ${backendStatus === 'online' ? 'online' : (backendStatus === 'loading' ? 'loading' : 'offline')}`} 
-                        title={`Backend: ${backendStatus}`}
-                    />
-                </div>
+                <StatusDots />
 
                 <button 
                     className="mobile-search-toggle" 

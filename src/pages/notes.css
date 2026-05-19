@@ -194,10 +194,15 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.toolbar-left, .toolbar-right {
+.toolbar-left, .toolbar-right, .toolbar-center {
     display: flex;
     gap: 0.75rem;
     align-items: center;
+}
+
+.toolbar-center {
+    flex: 1;
+    justify-content: center;
 }
 
 .btn-icon {

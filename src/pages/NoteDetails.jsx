@@ -18,6 +18,7 @@ import html2canvas from "html2canvas";
 import Background from "../components/background/Background";
 import "./notes.css";
 import { fetchApi } from "../services/api";
+import StatusDots from "../components/status/StatusDots";
 
 export default function NoteDetails({ user }) {
     const { owner, videoId } = useParams();
@@ -149,6 +150,9 @@ export default function NoteDetails({ user }) {
         return (
             <div className="note-details-page">
                 <Background />
+                <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+                    <StatusDots />
+                </div>
                 <div className="note-content-area skeleton" style={{ minHeight: '80vh' }}></div>
             </div>
         );
@@ -158,6 +162,9 @@ export default function NoteDetails({ user }) {
         return (
             <div className="note-details-page">
                 <Background />
+                <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+                    <StatusDots />
+                </div>
                 <div className="notes-empty">
                     <h2>Note not found</h2>
                     <button className="btn-primary" onClick={() => navigate("/notes")}>Back to Notes</button>
@@ -176,6 +183,10 @@ export default function NoteDetails({ user }) {
                         <FiArrowLeft />
                     </button>
                     {saveStatus === 'success' && <span className="save-indicator success"><FiCheck /> Saved</span>}
+                </div>
+
+                <div className="toolbar-center">
+                    <StatusDots />
                 </div>
                 
                 <div className="toolbar-right">
