@@ -8,18 +8,55 @@ import {
   useEdgesState,
   addEdge,
   MarkerType,
+  Handle,
+  Position,
+  Panel,
+  ReactFlowProvider,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiSend, FiSave, FiDownload, FiExternalLink, 
-  FiYoutube, FiGlobe, FiX, FiPlus, FiTrash2, FiEdit3, FiFileText
+  FiYoutube, FiGlobe, FiX, FiPlus, FiTrash2, FiEdit3, FiFileText, FiCheck
 } from 'react-icons/fi';
 import { fetchApi } from '../services/api';
 import { fetchYoutube } from '../services/youtube';
 import Top_panel from '../components/top-panel/Top_panel';
 import './Roadmap.css';
+
+const CustomNode = ({ data, selected }) => {
+  return (
+    <div className={`custom-roadmap-node ${selected ? 'selected' : ''}`}>
+      <Handle type="target" position={Position.Top} id="t-top" className="custom-node-handle" />
+      <Handle type="target" position={Position.Left} id="t-left" className="custom-node-handle" />
+      
+      <div className="custom-node-body">
+        <div className="custom-node-accent" />
+        <div className="custom-node-content">
+          <div className="custom-node-label">{data.label}</div>
+          {data.resources && data.resources.length > 0 && (
+            <div className="custom-node-meta">
+              <span className="resource-count-badge">
+                {data.resources.length} {data.resources.length === 1 ? 'resource' : 'resources'}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <Handle type="source" position={Position.Bottom} id="s-bottom" className="custom-node-handle" />
+      <Handle type="source" position={Position.Right} id="s-right" className="custom-node-handle" />
+    </div>
+  );
+};
+
+const nodeTypes = {
+  default: CustomNode,
+  custom: CustomNode,
+};
+
 
 const getYouTubeId = (url) => {
   if (!url) return null;
@@ -34,7 +71,8 @@ const getYouTubeId = (url) => {
 const initialNodes = [];
 const initialEdges = [];
 
-export default function Roadmap({ user, profileImage }) {
+function RoadmapContent({ user, profileImage }) {
+  const { screenToFlowPosition } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [skill, setSkill] = useState('');
@@ -47,6 +85,12 @@ export default function Roadmap({ user, profileImage }) {
   const [selectedNode, setSelectedNode] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [recentNotes, setRecentNotes] = useState([]);
+
+  // States for resource editing
+  const [showAddResource, setShowAddResource] = useState(false);
+  const [newResource, setNewResource] = useState({ title: '', url: '', type: 'article' });
+  const [editingResourceIndex, setEditingResourceIndex] = useState(null);
+  const [editingResource, setEditingResource] = useState({ title: '', url: '', type: 'article' });
 
   const updateResourceInState = useCallback((nodeId, targetResource, updates) => {
     setNodes((nds) =>
@@ -109,6 +153,105 @@ export default function Roadmap({ user, profileImage }) {
       };
     });
   }, [setNodes, setSelectedNode]);
+
+  const updateNodeResources = useCallback((nodeId, updatedResources) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            data: { ...node.data, resources: updatedResources },
+          };
+        }
+        return node;
+      })
+    );
+    setSelectedNode((prev) => {
+      if (!prev || prev.id !== nodeId) return prev;
+      return {
+        ...prev,
+        data: { ...prev.data, resources: updatedResources },
+      };
+    });
+  }, [setNodes, setSelectedNode]);
+
+  const handleAddResource = () => {
+    if (!newResource.title.trim() || !newResource.url.trim()) return;
+    const updatedResources = [...(selectedNode.data.resources || []), { ...newResource }];
+    updateNodeResources(selectedNode.id, updatedResources);
+    setNewResource({ title: '', url: '', type: 'article' });
+    setShowAddResource(false);
+  };
+
+  const handleDeleteResource = (index) => {
+    const updatedResources = (selectedNode.data.resources || []).filter((_, i) => i !== index);
+    updateNodeResources(selectedNode.id, updatedResources);
+  };
+
+  const startEditingResource = (index, res) => {
+    setEditingResourceIndex(index);
+    setEditingResource({ ...res });
+  };
+
+  const handleSaveEditedResource = (index) => {
+    if (!editingResource.title.trim() || !editingResource.url.trim()) return;
+    const updatedResources = (selectedNode.data.resources || []).map((res, i) =>
+      i === index ? { ...editingResource } : res
+    );
+    updateNodeResources(selectedNode.id, updatedResources);
+    setEditingResourceIndex(null);
+  };
+
+  const addCustomNode = () => {
+    const newId = `node_${Date.now()}`;
+    let position = { x: 200, y: 200 };
+    
+    if (selectedNode) {
+      position = {
+        x: selectedNode.position.x,
+        y: selectedNode.position.y + 150
+      };
+    } else if (nodes.length > 0) {
+      const lastNode = nodes[nodes.length - 1];
+      position = {
+        x: lastNode.position.x,
+        y: lastNode.position.y + 150
+      };
+    }
+    
+    const newNode = {
+      id: newId,
+      type: 'default',
+      position,
+      data: {
+        label: 'New Step',
+        resources: []
+      }
+    };
+    
+    setNodes((nds) => [...nds, newNode]);
+    
+    if (selectedNode) {
+      const newEdge = {
+        id: `e-${selectedNode.id}-${newId}`,
+        source: selectedNode.id,
+        target: newId,
+        animated: true,
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#6366f1' },
+        style: { stroke: '#6366f1', strokeWidth: 2 }
+      };
+      setEdges((eds) => addEdge(newEdge, eds));
+    }
+    
+    setSelectedNode(newNode);
+    setIsEditing(true);
+  };
+
+  const onEdgeClick = useCallback((event, edge) => {
+    if (window.confirm("Delete this connection?")) {
+      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+    }
+  }, [setEdges]);
 
   useEffect(() => {
     if (!selectedNode || !selectedNode.data || !selectedNode.data.resources) return;
@@ -193,8 +336,18 @@ export default function Roadmap({ user, profileImage }) {
   }, [selectedNode, roadmapTitle, skill, updateResourceInState, removeResourceFromState]);
   
   const loadSpecificRoadmap = useCallback((roadmap) => {
-    setNodes(roadmap.nodes || []);
-    setEdges(roadmap.edges || []);
+    const cleanedNodes = (roadmap.nodes || []).map(node => {
+      // eslint-disable-next-line no-unused-vars
+      const { style, ...rest } = node;
+      return rest;
+    });
+    setNodes(cleanedNodes);
+    setEdges((roadmap.edges || []).map(e => ({
+      ...e,
+      animated: true,
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#6366f1' },
+      style: { stroke: '#6366f1', strokeWidth: 2 }
+    })));
     setRoadmapTitle(roadmap.title || "");
     setCurrentRoadmapId(roadmap.id);
     setSkill(roadmap.skill || "");
@@ -234,7 +387,12 @@ export default function Roadmap({ user, profileImage }) {
           } else if (data.nodes) {
             // Legacy single roadmap
             setNodes(data.nodes);
-            setEdges(data.edges);
+            setEdges((data.edges || []).map(e => ({
+              ...e,
+              animated: true,
+              markerEnd: { type: MarkerType.ArrowClosed, color: '#6366f1' },
+              style: { stroke: '#6366f1', strokeWidth: 2 }
+            })));
             setRoadmapTitle(data.title || "My Roadmap");
             setRoadmaps([data]);
           }
@@ -247,7 +405,15 @@ export default function Roadmap({ user, profileImage }) {
   }, [user, loadSpecificRoadmap, setNodes, setEdges]);
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge({ ...params, animated: true, markerEnd: { type: MarkerType.ArrowClosed } }, eds)),
+    (params) => {
+      const newEdge = {
+        ...params,
+        animated: true,
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#6366f1' },
+        style: { stroke: '#6366f1', strokeWidth: 2 }
+      };
+      setEdges((eds) => addEdge(newEdge, eds));
+    },
     [setEdges]
   );
 
@@ -255,6 +421,52 @@ export default function Roadmap({ user, profileImage }) {
     setSelectedNode(node);
     setIsEditing(false);
   }, []);
+
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+    setIsEditing(false);
+  }, []);
+
+  const onPaneDoubleClick = useCallback((event) => {
+    if (
+      event.target.classList.contains('react-flow__pane') ||
+      event.target.classList.contains('react-flow__background') ||
+      event.target.tagName === 'svg'
+    ) {
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      const newId = `node_${Date.now()}`;
+      const newNode = {
+        id: newId,
+        type: 'default',
+        position,
+        data: {
+          label: 'New Step',
+          resources: []
+        }
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+
+      if (selectedNode) {
+        const newEdge = {
+          id: `e-${selectedNode.id}-${newId}`,
+          source: selectedNode.id,
+          target: newId,
+          animated: true,
+          markerEnd: { type: MarkerType.ArrowClosed, color: '#6366f1' },
+          style: { stroke: '#6366f1', strokeWidth: 2 }
+        };
+        setEdges((eds) => addEdge(newEdge, eds));
+      }
+
+      setSelectedNode(newNode);
+      setIsEditing(true);
+    }
+  }, [screenToFlowPosition, selectedNode, setNodes, setEdges]);
 
   const generateRoadmap = async (e) => {
     e.preventDefault();
@@ -272,19 +484,7 @@ export default function Roadmap({ user, profileImage }) {
         const { nodes: newNodes, edges: newEdges } = result.roadmap;
         setNodes(newNodes.map(n => ({
           ...n,
-          data: { ...n.data, label: n.label, resources: n.resources || [] },
-          style: { 
-            background: 'rgba(20, 20, 20, 0.9)', 
-            color: '#fff', 
-            border: '1px solid #333', 
-            borderRadius: '16px',
-            padding: '15px',
-            fontSize: '14px',
-            width: 200,
-            cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-            transition: 'all 0.3s ease'
-          }
+          data: { ...n.data, label: n.label, resources: n.resources || [] }
         })));
         setEdges(newEdges.map(e => ({
           ...e,
@@ -498,29 +698,114 @@ export default function Roadmap({ user, profileImage }) {
                         </div>
                       );
                     }
-                    return (
-                      <a 
-                        key={i} 
-                        href={res.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="resource-item"
-                      >
-                        {res.type === 'video' ? <FiYoutube className="res-icon video" /> : <FiGlobe className="res-icon site" />}
-                        <div className="res-info">
-                          <span className="res-title">{res.title}</span>
-                          <FiExternalLink className="res-link-icon" />
+
+                    if (editingResourceIndex === i) {
+                      return (
+                        <div key={i} className="resource-edit-form-inline">
+                          <div className="form-group-inline">
+                            <select
+                              value={editingResource.type}
+                              onChange={(e) => setEditingResource({ ...editingResource, type: e.target.value })}
+                            >
+                              <option value="article">Article</option>
+                              <option value="video">Video</option>
+                            </select>
+                            <input
+                              type="text"
+                              placeholder="Title"
+                              value={editingResource.title}
+                              onChange={(e) => setEditingResource({ ...editingResource, title: e.target.value })}
+                            />
+                            <input
+                              type="text"
+                              placeholder="URL"
+                              value={editingResource.url}
+                              onChange={(e) => setEditingResource({ ...editingResource, url: e.target.value })}
+                            />
+                          </div>
+                          <div className="edit-form-actions">
+                            <button className="save-edit-res-btn" onClick={() => handleSaveEditedResource(i)} title="Save">
+                              <FiCheck />
+                            </button>
+                            <button className="cancel-edit-res-btn" onClick={() => setEditingResourceIndex(null)} title="Cancel">
+                              <FiX />
+                            </button>
+                          </div>
                         </div>
-                      </a>
+                      );
+                    }
+
+                    return (
+                      <div key={i} className="resource-item-wrapper">
+                        <a 
+                          href={res.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="resource-item"
+                        >
+                          {res.type === 'video' ? <FiYoutube className="res-icon video" /> : <FiGlobe className="res-icon site" />}
+                          <div className="res-info">
+                            <span className="res-title">{res.title}</span>
+                            <FiExternalLink className="res-link-icon" />
+                          </div>
+                        </a>
+                        <div className="resource-actions">
+                          <button className="edit-res-btn" onClick={() => startEditingResource(i, res)} title="Edit Resource">
+                            <FiEdit3 />
+                          </button>
+                          <button className="delete-res-btn" onClick={() => handleDeleteResource(i)} title="Delete Resource">
+                            <FiTrash2 />
+                          </button>
+                        </div>
+                      </div>
                     );
                   })}
-                  <button className="add-res-placeholder"><FiPlus /> Add Resource</button>
+
+                  {showAddResource ? (
+                    <div className="resource-add-form-inline">
+                      <h4>Add New Resource</h4>
+                      <div className="form-group-inline">
+                        <select
+                          value={newResource.type}
+                          onChange={(e) => setNewResource({ ...newResource, type: e.target.value })}
+                        >
+                          <option value="article">Article</option>
+                          <option value="video">Video</option>
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="Title"
+                          value={newResource.title}
+                          onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
+                        />
+                        <input
+                          type="text"
+                          placeholder="URL"
+                          value={newResource.url}
+                          onChange={(e) => setNewResource({ ...newResource, url: e.target.value })}
+                        />
+                      </div>
+                      <div className="add-form-actions">
+                        <button className="confirm-add-res-btn" onClick={handleAddResource}>
+                          Add
+                        </button>
+                        <button className="cancel-add-res-btn" onClick={() => setShowAddResource(false)}>
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button className="add-res-placeholder" onClick={() => setShowAddResource(true)}>
+                      <FiPlus /> Add Resource
+                    </button>
+                  )}
                 </div>
                 
                 <button 
                   className="delete-node-btn"
                   onClick={() => {
                     setNodes((nds) => nds.filter((n) => n.id !== selectedNode.id));
+                    setEdges((eds) => eds.filter((e) => e.source !== selectedNode.id && e.target !== selectedNode.id));
                     setSelectedNode(null);
                   }}
                 >
@@ -539,20 +824,37 @@ export default function Roadmap({ user, profileImage }) {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
+            onPaneClick={onPaneClick}
+            onPaneDoubleClick={onPaneDoubleClick}
+            nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{ padding: 0.2 }}
             colorMode="dark"
           >
-            <Background color="#111" gap={25} variant="dots" />
+            <Background color="rgba(99, 102, 241, 0.12)" gap={24} size={1.5} variant="dots" />
             <Controls />
             <MiniMap 
                nodeColor={() => '#6366f1'} 
                maskColor="rgba(0, 0, 0, 0.7)"
                style={{ background: '#0a0a0a' }}
             />
+            <Panel position="top-right" className="canvas-custom-panel">
+              <button className="canvas-add-btn" onClick={addCustomNode}>
+                <FiPlus /> Add Step
+              </button>
+            </Panel>
           </ReactFlow>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Roadmap(props) {
+  return (
+    <ReactFlowProvider>
+      <RoadmapContent {...props} />
+    </ReactFlowProvider>
   );
 }

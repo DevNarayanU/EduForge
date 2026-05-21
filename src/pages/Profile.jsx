@@ -107,6 +107,11 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
   const saving = false;
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("roadmaps");
+
+  useEffect(() => {
+    setActiveTab(isOwnProfile ? "roadmaps" : "notes");
+  }, [isOwnProfile]);
 
   useEffect(() => {
     if (!targetUser) {
@@ -191,16 +196,30 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
     };
   }, [targetUser, user, isOwnProfile, setGlobalProfileImage]);
 
+  const previewProfile = isEditing ? {
+    ...profile,
+    display_name: form.display_name,
+    role_title: form.role_title,
+    profile_image_url: form.profile_image_url,
+    website: form.website,
+    location: form.location,
+    timezone: form.timezone,
+    bio: form.bio,
+    skills: form.skills,
+  } : profile;
+
+  const previewSocials = isEditing ? formSocials : socials;
+
   const socialEntries = useMemo(
     () =>
-      Object.entries(socials)
+      Object.entries(previewSocials)
         .filter(([, value]) => value)
         .map(([key, value]) => ({
           key,
           label: SOCIAL_LABELS[key],
           value,
         })),
-    [socials]
+    [previewSocials]
   );
 
   const recentVideos = stats.panels?.recently_watched || [];
@@ -343,320 +362,375 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
         {loading ? (
           <ProfileSkeleton />
         ) : (
-          <div className="profile-minimal-shell">
-            <section className="profile-card profile-identity-card">
-              <div className="profile-identity-row">
-                <img
-                  src={profile.profile_image_url || forgeLogo}
-                  alt={profile.display_name || user}
-                  className="profile-avatar"
-                />
-                <div>
-                  <div className="profile-name-row">
-                    <h2>{profile.display_name || user}</h2>
-                    {profile.verified && <span>Verified</span>}
-                  </div>
-                  <p>{profile.role_title || "Learner"}</p>
-                </div>
-              </div>
-
-              <p className="profile-bio-text">
-                {profile.bio || "No bio added yet."}
-              </p>
-
-              <dl className="profile-detail-list">
-                <div>
-                  <dt>Username</dt>
-                  <dd>{profile.username || user}</dd>
-                </div>
-                <div>
-                  <dt>Location</dt>
-                  <dd>{profile.location || "Not set"}</dd>
-                </div>
-                <div>
-                  <dt>Timezone</dt>
-                  <dd>{profile.timezone || "Not set"}</dd>
-                </div>
-                <div>
-                  <dt>Website</dt>
-                  <dd>
-                    {profile.website ? (
-                      <a href={profile.website} target="_blank" rel="noreferrer">
-                        {profile.website}
-                      </a>
-                    ) : (
-                      "Not set"
-                    )}
-                  </dd>
-                </div>
-              </dl>
-
-              <div className="profile-skill-list">
-                {(profile.skills || []).length > 0 ? (
-                  profile.skills.map((skill) => <span key={skill}>{skill}</span>)
-                ) : (
-                  <EmptyState label="No skills added yet." />
-                )}
-              </div>
-            </section>
-
-            {isOwnProfile && isEditing && (
-              <section className="profile-card profile-edit-card">
-                <div className="profile-section-heading">
-                  <h2>Edit details</h2>
-                  <p>Update what appears on your profile.</p>
-                </div>
-
-                <div className="profile-form-grid">
-                  <label>
-                    Username
-                    <input name="display_name" value={form.display_name} onChange={handleProfileInput} />
-                  </label>
-                  <label>
-                    Role
-                    <input name="role_title" value={form.role_title} onChange={handleProfileInput} />
-                  </label>
-                  <label>
-                    Profile image URL
-                    <input name="profile_image_url" value={form.profile_image_url} onChange={handleProfileInput} />
-                  </label>
-                  <label>
-                    Website
-                    <input name="website" value={form.website} onChange={handleProfileInput} />
-                  </label>
-                  <label>
-                    Location
-                    <input name="location" value={form.location} onChange={handleProfileInput} />
-                  </label>
-                  <label>
-                    Timezone
-                    <input name="timezone" value={form.timezone} onChange={handleProfileInput} />
-                  </label>
-                  <label className="profile-form-wide">
-                    Bio
-                    <textarea name="bio" value={form.bio} onChange={handleProfileInput} rows="4" />
-                  </label>
-                </div>
-
-                <div className="profile-edit-block">
-                  <label htmlFor="profile-skill-input">Skills</label>
-                  <div className="profile-skill-editor">
-                    <input
-                      id="profile-skill-input"
-                      value={skillInput}
-                      onChange={(event) => setSkillInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          addSkill();
-                        }
-                      }}
-                    />
-                    <button type="button" onClick={addSkill}>Add</button>
-                  </div>
-                  <div className="profile-edit-skills">
-                    {form.skills.map((skill) => (
-                      <button key={skill} type="button" onClick={() => removeSkill(skill)}>
-                        {skill} x
-                      </button>
-                    ))}
+          <div className="profile-dashboard-layout">
+            <div className="profile-left-col">
+              <section className="profile-card profile-identity-card">
+                <div className="profile-identity-row">
+                  <img
+                    src={previewProfile.profile_image_url || forgeLogo}
+                    alt={previewProfile.display_name || user}
+                    className="profile-avatar"
+                  />
+                  <div>
+                    <div className="profile-name-row">
+                      <h2>{previewProfile.display_name || user}</h2>
+                      {previewProfile.verified && <span>Verified</span>}
+                    </div>
+                    <p>{previewProfile.role_title || "Learner"}</p>
                   </div>
                 </div>
 
-                <div className="profile-edit-block">
-                  <p className="profile-edit-label">Social links</p>
-                  <div className="profile-form-grid">
-                    {Object.keys(EMPTY_SOCIALS).map((key) => (
-                      <label key={key}>
-                        {SOCIAL_LABELS[key]}
-                        <input
-                          name={key}
-                          value={formSocials[key] || ""}
-                          onChange={handleSocialInput}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                <p className="profile-bio-text">
+                  {previewProfile.bio || "No bio added yet."}
+                </p>
 
-                <div className="profile-edit-actions">
-                  <button type="button" className="profile-secondary-button" onClick={() => setIsEditing(false)}>
-                    Cancel
-                  </button>
-                  <button type="button" className="profile-primary-button" onClick={saveProfile} disabled={saving}>
-                    {saving ? "Saving..." : "Save changes"}
-                  </button>
+                <dl className="profile-detail-list">
+                  <div>
+                    <dt>Username</dt>
+                    <dd>{previewProfile.username || user}</dd>
+                  </div>
+                  <div>
+                    <dt>Location</dt>
+                    <dd>{previewProfile.location || "Not set"}</dd>
+                  </div>
+                  <div>
+                    <dt>Timezone</dt>
+                    <dd>{previewProfile.timezone || "Not set"}</dd>
+                  </div>
+                  <div>
+                    <dt>Website</dt>
+                    <dd>
+                      {previewProfile.website ? (
+                        <a href={previewProfile.website} target="_blank" rel="noreferrer">
+                          {previewProfile.website}
+                        </a>
+                      ) : (
+                        "Not set"
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="profile-skill-list">
+                  {(previewProfile.skills || []).length > 0 ? (
+                    previewProfile.skills.map((skill) => <span key={skill}>{skill}</span>)
+                  ) : (
+                    <EmptyState label="No skills added yet." />
+                  )}
                 </div>
               </section>
-            )}
 
-            <section className="profile-card profile-stats-card">
-              <div className="profile-section-heading">
-                <h2>Learning stats</h2>
-                <p>Current progress from your watch time, streak, and notes.</p>
-              </div>
-
-              <div className="profile-stat-grid">
-                <div>
-                  <span>XP</span>
-                  <strong>{stats.xp?.score || 1}</strong>
-                  <small>Level {stats.xp?.level || 1}</small>
-                </div>
-                <div>
-                  <span>Streak</span>
-                  <strong>{stats.streak || 0}</strong>
-                  <small>days</small>
-                </div>
-                <div>
-                  <span>Watch time</span>
-                  <strong>{formatTime(stats.xp?.watch_time_seconds || 0)}</strong>
-                  <small>H:M:S</small>
-                </div>
-                <div>
-                  <span>Next level</span>
-                  <strong>{stats.xp?.next_level_at || 0}</strong>
-                  <small>XP</small>
-                </div>
-              </div>
-
-              <div className="profile-progress-row">
-                <div>
-                  <span>Level progress</span>
-                  <strong>{Math.round(xpPercent)}%</strong>
-                </div>
-                <div className="profile-progress-track">
-                  <span style={{ width: `${xpPercent}%` }} />
-                </div>
-              </div>
-            </section>
-
-            <section className="profile-card profile-social-card">
-              <div className="profile-section-heading">
-                <h2>Links</h2>
-                <p>Connected profiles and personal pages.</p>
-              </div>
-              <div className="profile-link-list">
-                {socialEntries.length > 0 ? (
-                  socialEntries.map((entry) => (
-                    <a key={entry.key} href={entry.value} target="_blank" rel="noreferrer">
-                      <span>{entry.label}</span>
-                      <small>{entry.value}</small>
-                    </a>
-                  ))
-                ) : (
-                  <EmptyState label="No links added yet." />
-                )}
-              </div>
-            </section>
-
-            <section className="profile-card profile-heatmap-section">
-              <div className="profile-section-heading">
-                <h2>Activity heatmap</h2>
-                <p>Login consistency for the current year.</p>
-              </div>
-              <Heatmap username={profile.username || targetUser} />
-            </section>
-
-            {isOwnProfile && (
-              <section className="profile-card profile-list-card">
+              <section className="profile-card profile-social-card">
                 <div className="profile-section-heading">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <div>
-                      <h2>Saved Roadmaps</h2>
-                      <p>Your custom learning paths and generated canvases.</p>
-                    </div>
-                    <button 
-                      className="profile-secondary-button" 
-                      onClick={() => navigate("/roadmap")}
-                      style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-                    >
-                      Open Canvas
-                    </button>
-                  </div>
+                  <h2>Links</h2>
+                  <p>Connected profiles and personal pages.</p>
                 </div>
-                <div className="profile-activity-list">
-                  {savedRoadmaps.length > 0 ? (
-                    savedRoadmaps.map((item) => (
-                      <article 
-                        key={item.id} 
-                        className="clickable-item"
-                        onClick={() => navigate("/roadmap")}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <div>
-                          <h3>{item.title}</h3>
-                          <p>{item.skill || "Custom Path"}</p>
-                        </div>
-                        <span>{item.nodes?.length || 0} Steps</span>
-                      </article>
+                <div className="profile-link-list">
+                  {socialEntries.length > 0 ? (
+                    socialEntries.map((entry) => (
+                      <a key={entry.key} href={entry.value} target="_blank" rel="noreferrer">
+                        <span>{entry.label}</span>
+                        <small>{entry.value}</small>
+                      </a>
                     ))
                   ) : (
-                    <EmptyState label="No roadmaps saved yet." />
+                    <EmptyState label="No links added yet." />
                   )}
                 </div>
               </section>
-            )}
+            </div>
 
-            {isOwnProfile && (
-              <section className="profile-card profile-list-card">
-                <div className="profile-section-heading">
-                  <h2>Recently watched</h2>
-                  <p>Videos logged from real watch sessions.</p>
-                </div>
-                <div className="profile-activity-list">
-                  {recentVideos.map((item) => (
-                    <article 
-                      key={item.id} 
-                      className={item.reference_id ? "clickable-item" : ""}
-                      onClick={() => handleActivityClick(item.reference_id)}
-                      style={item.reference_id ? { cursor: 'pointer' } : {}}
-                    >
-                      <div>
-                        <h3>{item.title}</h3>
-                        <p>{item.subtitle}</p>
-                      </div>
-                      <span>{item.status}</span>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <section className="profile-card profile-list-card">
-              <div className="profile-section-heading">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                  <div>
-                    <h2>Recent notes</h2>
-                    <p>Latest saved notes from your learning sessions.</p>
+            <div className="profile-right-col">
+              {isOwnProfile && isEditing ? (
+                <section className="profile-card profile-edit-card">
+                  <div className="profile-section-heading">
+                    <h2>Edit details</h2>
+                    <p>Update what appears on your profile.</p>
                   </div>
-                  {isOwnProfile && (
-                    <button 
-                      className="profile-secondary-button" 
-                      onClick={() => navigate("/notes")}
-                      style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-                    >
-                      View All
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="profile-activity-list">
-                {recentNotes.map((item) => (
-                  <article 
-                    key={item.id}
-                    className={item.reference_id ? "clickable-item" : ""}
-                    onClick={() => item.reference_id && navigate(`/notes/${targetUser}/${item.reference_id}`)}
-                    style={item.reference_id ? { cursor: 'pointer' } : {}}
-                  >
-                    <div>
-                      <h3>{item.title}</h3>
-                      <p>{item.subtitle}</p>
+
+                  <div className="profile-form-grid">
+                    <label>
+                      Username
+                      <input name="display_name" value={form.display_name} onChange={handleProfileInput} />
+                    </label>
+                    <label>
+                      Role
+                      <input name="role_title" value={form.role_title} onChange={handleProfileInput} />
+                    </label>
+                    <label>
+                      Profile image URL
+                      <input name="profile_image_url" value={form.profile_image_url} onChange={handleProfileInput} />
+                    </label>
+                    <label>
+                      Website
+                      <input name="website" value={form.website} onChange={handleProfileInput} />
+                    </label>
+                    <label>
+                      Location
+                      <input name="location" value={form.location} onChange={handleProfileInput} />
+                    </label>
+                    <label>
+                      Timezone
+                      <input name="timezone" value={form.timezone} onChange={handleProfileInput} />
+                    </label>
+                    <label className="profile-form-wide">
+                      Bio
+                      <textarea name="bio" value={form.bio} onChange={handleProfileInput} rows="4" />
+                    </label>
+                  </div>
+
+                  <div className="profile-edit-block">
+                    <label htmlFor="profile-skill-input">Skills</label>
+                    <div className="profile-skill-editor">
+                      <input
+                        id="profile-skill-input"
+                        value={skillInput}
+                        onChange={(event) => setSkillInput(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            addSkill();
+                          }
+                        }}
+                      />
+                      <button type="button" onClick={addSkill}>Add</button>
                     </div>
-                    <span>{item.status}</span>
-                  </article>
-                ))}
-              </div>
-            </section>
+                    <div className="profile-edit-skills">
+                      {form.skills.map((skill) => (
+                        <button key={skill} type="button" onClick={() => removeSkill(skill)}>
+                          {skill} x
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="profile-edit-block">
+                    <p className="profile-edit-label">Social links</p>
+                    <div className="profile-form-grid">
+                      {Object.keys(EMPTY_SOCIALS).map((key) => (
+                        <label key={key}>
+                          {SOCIAL_LABELS[key]}
+                          <input
+                            name={key}
+                            value={formSocials[key] || ""}
+                            onChange={handleSocialInput}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="profile-edit-actions">
+                    <button type="button" className="profile-secondary-button" onClick={() => setIsEditing(false)}>
+                      Cancel
+                    </button>
+                    <button type="button" className="profile-primary-button" onClick={saveProfile} disabled={saving}>
+                      {saving ? "Saving..." : "Save changes"}
+                    </button>
+                  </div>
+                </section>
+              ) : (
+                <>
+                  <section className="profile-card profile-stats-card">
+                    <div className="profile-section-heading">
+                      <h2>Learning stats</h2>
+                      <p>Current progress from your watch time, streak, and notes.</p>
+                    </div>
+
+                    <div className="profile-stat-grid">
+                      <div>
+                        <span>XP</span>
+                        <strong>{stats.xp?.score || 1}</strong>
+                        <small>Level {stats.xp?.level || 1}</small>
+                      </div>
+                      <div>
+                        <span>Streak</span>
+                        <strong>{stats.streak || 0}</strong>
+                        <small>days</small>
+                      </div>
+                      <div>
+                        <span>Watch time</span>
+                        <strong>{formatTime(stats.xp?.watch_time_seconds || 0)}</strong>
+                        <small>H:M:S</small>
+                      </div>
+                      <div>
+                        <span>Next level</span>
+                        <strong>{stats.xp?.next_level_at || 0}</strong>
+                        <small>XP</small>
+                      </div>
+                    </div>
+
+                    <div className="profile-progress-row">
+                      <div>
+                        <span>Level progress</span>
+                        <strong>{Math.round(xpPercent)}%</strong>
+                      </div>
+                      <div className="profile-progress-track">
+                        <span style={{ width: `${xpPercent}%` }} />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="profile-card profile-heatmap-section">
+                    <div className="profile-section-heading">
+                      <h2>Activity heatmap</h2>
+                      <p>Login consistency for the current year.</p>
+                    </div>
+                    <Heatmap username={profile.username || targetUser} />
+                  </section>
+
+                  <section className="profile-card profile-list-card">
+                    <div className="profile-tabs-header">
+                      {isOwnProfile ? (
+                        <>
+                          <button 
+                            type="button" 
+                            className={`profile-tab-btn ${activeTab === 'roadmaps' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('roadmaps')}
+                          >
+                            Saved Roadmaps
+                          </button>
+                          <button 
+                            type="button" 
+                            className={`profile-tab-btn ${activeTab === 'watched' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('watched')}
+                          >
+                            Recently Watched
+                          </button>
+                          <button 
+                            type="button" 
+                            className={`profile-tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('notes')}
+                          >
+                            Recent Notes
+                          </button>
+                        </>
+                      ) : (
+                        <button 
+                          type="button" 
+                          className="profile-tab-btn active"
+                        >
+                          Recent Notes
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="profile-tab-content">
+                      {isOwnProfile && activeTab === 'roadmaps' && (
+                        <>
+                          <div className="profile-section-heading">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                              <div>
+                                <h2>Saved Roadmaps</h2>
+                                <p>Your custom learning paths and generated canvases.</p>
+                              </div>
+                              <button 
+                                className="profile-secondary-button" 
+                                onClick={() => navigate("/roadmap")}
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                              >
+                                Open Canvas
+                              </button>
+                            </div>
+                          </div>
+                          <div className="profile-activity-list">
+                            {savedRoadmaps.length > 0 ? (
+                              savedRoadmaps.map((item) => (
+                                <article 
+                                  key={item.id} 
+                                  className="clickable-item"
+                                  onClick={() => navigate("/roadmap")}
+                                  style={{ cursor: 'pointer' }}
+                                >
+                                  <div>
+                                    <h3>{item.title}</h3>
+                                    <p>{item.skill || "Custom Path"}</p>
+                                  </div>
+                                  <span>{item.nodes?.length || 0} Steps</span>
+                                </article>
+                              ))
+                            ) : (
+                              <EmptyState label="No roadmaps saved yet." />
+                            )}
+                          </div>
+                        </>
+                      )}
+
+                      {isOwnProfile && activeTab === 'watched' && (
+                        <>
+                          <div className="profile-section-heading">
+                            <h2>Recently watched</h2>
+                            <p>Videos logged from real watch sessions.</p>
+                          </div>
+                          <div className="profile-activity-list">
+                            {recentVideos.length > 0 ? (
+                              recentVideos.map((item) => (
+                                <article 
+                                  key={item.id} 
+                                  className={item.reference_id ? "clickable-item" : ""}
+                                  onClick={() => handleActivityClick(item.reference_id)}
+                                  style={item.reference_id ? { cursor: 'pointer' } : {}}
+                                >
+                                  <div>
+                                    <h3>{item.title}</h3>
+                                    <p>{item.subtitle}</p>
+                                  </div>
+                                  <span>{item.status}</span>
+                                </article>
+                              ))
+                            ) : (
+                              <EmptyState label="No videos watched yet." />
+                            )}
+                          </div>
+                        </>
+                      )}
+
+                      {(!isOwnProfile || activeTab === 'notes') && (
+                        <>
+                          <div className="profile-section-heading">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                              <div>
+                                <h2>Recent notes</h2>
+                                <p>Latest saved notes from your learning sessions.</p>
+                              </div>
+                              {isOwnProfile && (
+                                <button 
+                                  className="profile-secondary-button" 
+                                  onClick={() => navigate("/notes")}
+                                  style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                                >
+                                  View All
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="profile-activity-list">
+                            {recentNotes.length > 0 ? (
+                              recentNotes.map((item) => (
+                                <article 
+                                  key={item.id}
+                                  className={item.reference_id ? "clickable-item" : ""}
+                                  onClick={() => item.reference_id && navigate(`/notes/${targetUser}/${item.reference_id}`)}
+                                  style={item.reference_id ? { cursor: 'pointer' } : {}}
+                                >
+                                  <div>
+                                    <h3>{item.title}</h3>
+                                    <p>{item.subtitle}</p>
+                                  </div>
+                                  <span>{item.status}</span>
+                                </article>
+                              ))
+                            ) : (
+                              <EmptyState label="No notes taken yet." />
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </section>
+                </>
+              )}
+            </div>
           </div>
         )}
 
