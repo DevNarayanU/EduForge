@@ -17,8 +17,19 @@ import {
   FiYoutube, FiGlobe, FiX, FiPlus, FiTrash2, FiEdit3, FiFileText
 } from 'react-icons/fi';
 import { fetchApi } from '../services/api';
+import { fetchYoutube } from '../services/youtube';
 import Top_panel from '../components/top-panel/Top_panel';
 import './Roadmap.css';
+
+const getYouTubeId = (url) => {
+  if (!url) return null;
+  if (url.length === 11 && !url.includes('/') && !url.includes('.')) {
+    return url;
+  }
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
 
 const initialNodes = [];
 const initialEdges = [];
@@ -36,6 +47,130 @@ export default function Roadmap({ user, profileImage }) {
   const [selectedNode, setSelectedNode] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [recentNotes, setRecentNotes] = useState([]);
+
+  const updateResourceInState = useCallback((nodeId, targetResource, updates) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          const updatedResources = node.data.resources.map((res) => {
+            if (res === targetResource || (res.type === targetResource.type && res.url === targetResource.url)) {
+              return { ...res, ...updates };
+            }
+            return res;
+          });
+          return {
+            ...node,
+            data: { ...node.data, resources: updatedResources },
+          };
+        }
+        return node;
+      })
+    );
+
+    setSelectedNode((prev) => {
+      if (!prev || prev.id !== nodeId) return prev;
+      const updatedResources = prev.data.resources.map((res) => {
+        if (res === targetResource || (res.type === targetResource.type && res.url === targetResource.url)) {
+          return { ...res, ...updates };
+        }
+        return res;
+      });
+      return {
+        ...prev,
+        data: { ...prev.data, resources: updatedResources },
+      };
+    });
+  }, [setNodes, setSelectedNode]);
+
+  const removeResourceFromState = useCallback((nodeId, targetResource) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          const updatedResources = node.data.resources.filter(
+            (res) => !(res === targetResource || (res.type === targetResource.type && res.url === targetResource.url))
+          );
+          return {
+            ...node,
+            data: { ...node.data, resources: updatedResources },
+          };
+        }
+        return node;
+      })
+    );
+
+    setSelectedNode((prev) => {
+      if (!prev || prev.id !== nodeId) return prev;
+      const updatedResources = prev.data.resources.filter(
+        (res) => !(res === targetResource || (res.type === targetResource.type && res.url === targetResource.url))
+      );
+      return {
+        ...prev,
+        data: { ...prev.data, resources: updatedResources },
+      };
+    });
+  }, [setNodes, setSelectedNode]);
+
+  useEffect(() => {
+    if (!selectedNode || !selectedNode.data || !selectedNode.data.resources) return;
+
+    const videoRes = selectedNode.data.resources.find(
+      (res) => res.type === 'video' && !res.verified && !res.isVerifying
+    );
+    if (!videoRes) return;
+
+    const verifyAndFixVideo = async () => {
+      const url = videoRes.url;
+      const videoId = getYouTubeId(url);
+
+      updateResourceInState(selectedNode.id, videoRes, { isVerifying: true });
+
+      let videoExists = false;
+      if (videoId) {
+        try {
+          const data = await fetchYoutube('videos', { part: 'id', id: videoId });
+          if (data && data.items && data.items.length > 0) {
+            videoExists = true;
+          }
+        } catch (err) {
+          console.error("Error verifying video existence:", err);
+        }
+      }
+
+      if (videoExists) {
+        updateResourceInState(selectedNode.id, videoRes, { verified: true, isVerifying: false });
+      } else {
+        try {
+          const query = `${selectedNode.data.label} ${roadmapTitle || skill || ''} tutorial`.trim();
+          const searchData = await fetchYoutube('search', {
+            q: query,
+            maxResults: 1,
+            type: 'video',
+            part: 'snippet'
+          });
+
+          if (searchData && searchData.items && searchData.items.length > 0) {
+            const newVideoId = searchData.items[0].id.videoId;
+            const newUrl = `https://www.youtube.com/watch?v=${newVideoId}`;
+            const newTitle = searchData.items[0].snippet.title;
+
+            updateResourceInState(selectedNode.id, videoRes, {
+              url: newUrl,
+              title: newTitle,
+              verified: true,
+              isVerifying: false
+            });
+          } else {
+            removeResourceFromState(selectedNode.id, videoRes);
+          }
+        } catch (searchErr) {
+          console.error("Error searching for replacement video:", searchErr);
+          updateResourceInState(selectedNode.id, videoRes, { verified: true, isVerifying: false });
+        }
+      }
+    };
+
+    verifyAndFixVideo();
+  }, [selectedNode, roadmapTitle, skill, updateResourceInState, removeResourceFromState]);
   
   const loadSpecificRoadmap = useCallback((roadmap) => {
     setNodes(roadmap.nodes || []);
@@ -332,21 +467,33 @@ export default function Roadmap({ user, profileImage }) {
                 </div>
                 
                 <div className="resources-list">
-                  {selectedNode.data.resources?.map((res, i) => (
-                    <a 
-                      key={i} 
-                      href={res.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="resource-item"
-                    >
-                      {res.type === 'video' ? <FiYoutube className="res-icon video" /> : <FiGlobe className="res-icon site" />}
-                      <div className="res-info">
-                        <span className="res-title">{res.title}</span>
-                        <FiExternalLink className="res-link-icon" />
-                      </div>
-                    </a>
-                  ))}
+                  {selectedNode.data.resources?.map((res, i) => {
+                    if (res.isVerifying) {
+                      return (
+                        <div key={i} className="resource-item verifying">
+                          <div className="spinner-small" />
+                          <div className="res-info">
+                            <span className="res-title">Verifying video source...</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <a 
+                        key={i} 
+                        href={res.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="resource-item"
+                      >
+                        {res.type === 'video' ? <FiYoutube className="res-icon video" /> : <FiGlobe className="res-icon site" />}
+                        <div className="res-info">
+                          <span className="res-title">{res.title}</span>
+                          <FiExternalLink className="res-link-icon" />
+                        </div>
+                      </a>
+                    );
+                  })}
                   <button className="add-res-placeholder"><FiPlus /> Add Resource</button>
                 </div>
                 
