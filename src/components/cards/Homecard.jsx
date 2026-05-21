@@ -1,9 +1,5 @@
 import "./Homecard.css"
-import { useNavigate } from "react-router-dom";
-
-
 function Homecard({data , setisplaying , setcurrentVideo}){
-    const navigate = useNavigate();
     const selectVideo = (item) => {
         setisplaying(true);
         setcurrentVideo(item)

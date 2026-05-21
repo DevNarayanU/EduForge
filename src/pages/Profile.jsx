@@ -104,7 +104,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
   const [skillInput, setSkillInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const saving = false;
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -189,7 +189,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
     return () => {
       cancelled = true;
     };
-  }, [targetUser, user, isOwnProfile]);
+  }, [targetUser, user, isOwnProfile, setGlobalProfileImage]);
 
   const socialEntries = useMemo(
     () =>

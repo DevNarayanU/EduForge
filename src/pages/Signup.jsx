@@ -30,7 +30,7 @@ function Signup(){
         }else{
             setError(data.error)
         }
-    }catch (err){
+    }catch {
         setError("Server connection failed!!!");
     }
     };

@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import "./custom_player.css";
 
 const Custom_player = forwardRef(function Custom_player({ videoId, onWatchTimeUpdate, onUnmount }, ref) {
@@ -13,7 +13,7 @@ const Custom_player = forwardRef(function Custom_player({ videoId, onWatchTimeUp
     onWatchTimeUpdate?.(watchTime);
   }, [watchTime, onWatchTimeUpdate]);
 
-  const measureActivePlayback = () => {
+  const measureActivePlayback = useCallback(() => {
     if (!isPlayingRef.current || !startTimeRef.current) return 0;
 
     const played = (Date.now() - startTimeRef.current) / 1000;
@@ -23,26 +23,45 @@ const Custom_player = forwardRef(function Custom_player({ videoId, onWatchTimeUp
     isPlayingRef.current = false;
     startTimeRef.current = 0;
     return played;
-  };
+  }, []);
 
-  const commitActivePlayback = () => {
+  const commitActivePlayback = useCallback(() => {
     const played = measureActivePlayback();
     if (played > 0) {
       setWatchTime((prev) => prev + played);
     }
     return played;
-  };
+  }, [measureActivePlayback]);
 
   useImperativeHandle(ref, () => ({
     flushWatchTime() {
       return commitActivePlayback();
     },
-  }));
+  }), [commitActivePlayback]);
+
+  const onUnmountRef = useRef(onUnmount);
+  useEffect(() => {
+    onUnmountRef.current = onUnmount;
+  }, [onUnmount]);
 
   useEffect(() => {
     setWatchTime(0);
     startTimeRef.current = 0;
     isPlayingRef.current = false;
+
+    const handleStateChange = (e) => {
+      if (e.data === window.YT.PlayerState.PLAYING) {
+        isPlayingRef.current = true;
+        startTimeRef.current = Date.now();
+      }
+
+      if (
+        e.data === window.YT.PlayerState.PAUSED ||
+        e.data === window.YT.PlayerState.ENDED
+      ) {
+        commitActivePlayback();
+      }
+    };
 
     const loadPlayer = () => {
       playerRef.current = new window.YT.Player(containerRef.current, {
@@ -73,25 +92,11 @@ const Custom_player = forwardRef(function Custom_player({ videoId, onWatchTimeUp
     return () => {
       const finalPlayed = measureActivePlayback();
       if (finalPlayed > 0) {
-        onUnmount?.(finalPlayed);
+        onUnmountRef.current?.(finalPlayed);
       }
       playerRef.current?.destroy();
     };
-  }, [videoId]);
-
-  const handleStateChange = (e) => {
-    if (e.data === window.YT.PlayerState.PLAYING) {
-      isPlayingRef.current = true;
-      startTimeRef.current = Date.now();
-    }
-
-    if (
-      e.data === window.YT.PlayerState.PAUSED ||
-      e.data === window.YT.PlayerState.ENDED
-    ) {
-      commitActivePlayback();
-    }
-  };
+  }, [videoId, commitActivePlayback, measureActivePlayback]);
 
   return (
     <div className="customPlayerContainer">

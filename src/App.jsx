@@ -12,38 +12,69 @@ import About from "./pages/info/About";
 import Contact from "./pages/info/Contact";
 import Terms from "./pages/info/Terms";
 import { useState,useEffect } from "react";
-const forgeLogo = "/forge.png";
 import { fetchApi } from "./services/api";
+import { supabase } from "./services/supabaseClient";
+const forgeLogo = "/forge.png";
 
 function App() {
   const [user, setuser] = useState(() => {
-  return localStorage.getItem("user") || "";
+    return localStorage.getItem("user") || "";
   });
 
   const [profileImage, setProfileImage] = useState(forgeLogo);
-
   const [input, setinput] = useState("");
 
-useEffect(() => {
-  localStorage.setItem("user", user);
-  if (user) {
-    fetchApi('getProfile', { username: user }, 'GET', { useCache: true })
-      .then(res => res.json())
-      .then(data => {
-        if (data.profile && data.profile.profile_image_url) {
-          setProfileImage(data.profile.profile_image_url);
-        } else {
-          setProfileImage(forgeLogo);
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const username = session.user.user_metadata?.username || session.user.email?.split('@')[0];
+        if (username) {
+          setuser(username);
         }
-      })
-      .catch(err => {
-        console.error("Error fetching profile image:", err);
-        setProfileImage(forgeLogo);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        const username = session.user.user_metadata?.username || session.user.email?.split('@')[0];
+        if (username) {
+          setuser(username);
+        }
+      } else {
+        setuser("");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("user", user);
+    if (user) {
+      fetchApi('getProfile', { username: user }, 'GET', { useCache: true })
+        .then(res => res.json())
+        .then(data => {
+          if (data.profile && data.profile.profile_image_url) {
+            setProfileImage(data.profile.profile_image_url);
+          } else {
+            setProfileImage(forgeLogo);
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching profile image:", err);
+          setProfileImage(forgeLogo);
+        });
+    } else {
+      Promise.resolve().then(() => {
+        setProfileImage("");
       });
-  } else {
-    setProfileImage("");
-  }
+    }
   }, [user]);
+
 
   return (
     <>

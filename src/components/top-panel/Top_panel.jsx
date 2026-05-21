@@ -8,7 +8,7 @@ import { fetchYoutube } from "../../services/youtube";
 import { ALLOWED_CHANNELS } from "../../constants";
 import StatusDots from "../status/StatusDots";
 
-export default function Top_panel({ data, setdata, setisplaying, initialQuery, user, profileImage }){
+export default function Top_panel({ setdata, setisplaying, initialQuery, profileImage }){
     const [input,setinput] = useState(initialQuery||"");
     const [query,setquery] = useState(initialQuery||"");
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function Top_panel({ data, setdata, setisplaying, initialQuery, u
             }
         }
         getData(query)
-    },[query])
+    },[query, setdata, setisplaying])
 
     return(
         <div className={`top-panel ${isSearchOpen ? 'search-active' : ''}`}>

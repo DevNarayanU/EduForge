@@ -12,14 +12,14 @@ export function useConnectivity() {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
                 
-                const response = await fetch("https://connectivitycheck.gstatic.com/generate_204", {
+                await fetch("https://connectivitycheck.gstatic.com/generate_204", {
                     mode: 'no-cors',
                     cache: 'no-store',
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
                 setIsOnline(true);
-            } catch (err) {
+            } catch {
                 setIsOnline(false);
             }
         };
@@ -34,10 +34,21 @@ export function useConnectivity() {
         checkConnectivity();
         const connInterval = setInterval(checkConnectivity, 10000);
 
-        // Check backend status
+        // Check backend status (Supabase)
         const checkBackend = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}?action=ping`);
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+                if (!supabaseUrl) {
+                    setBackendStatus('offline');
+                    return;
+                }
+                const res = await fetch(`${supabaseUrl}/rest/v1/`, {
+                    headers: {
+                        apikey: supabaseKey,
+                        Authorization: `Bearer ${supabaseKey}`
+                    }
+                });
                 if (res.ok) setBackendStatus('online');
                 else setBackendStatus('offline');
             } catch {

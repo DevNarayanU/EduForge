@@ -45,7 +45,7 @@ const PodiumItem = ({ user, rank, onClick }) => (
     </div>
 );
 
-export default function Leaderboard({ user }) {
+export default function Leaderboard() {
     const navigate = useNavigate();
     const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);

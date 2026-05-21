@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { fetchApi } from "../services/api";
 import StatusDots from "../components/status/StatusDots";
 
-function Login({ setuser, user }) {
+function Login({ setuser }) {
 
     const navigate = useNavigate();
     const [username, setusername] = useState("");
@@ -29,7 +29,7 @@ function Login({ setuser, user }) {
             } else {
                 setError(data.error);
             }
-        } catch (err) {
+        } catch {
             setError("Server connection failed!!!");
         }
     }

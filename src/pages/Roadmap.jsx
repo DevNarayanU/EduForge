@@ -10,14 +10,13 @@ import {
   MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { 
   FiSend, FiSave, FiDownload, FiExternalLink, 
   FiYoutube, FiGlobe, FiX, FiPlus, FiTrash2, FiEdit3, FiFileText
 } from 'react-icons/fi';
 import { fetchApi } from '../services/api';
 import Top_panel from '../components/top-panel/Top_panel';
-import Video from '../components/video/Video';
 import './Roadmap.css';
 
 const initialNodes = [];
@@ -37,19 +36,14 @@ export default function Roadmap({ user, profileImage }) {
   const [isEditing, setIsEditing] = useState(false);
   const [recentNotes, setRecentNotes] = useState([]);
   
-  // Custom Player State
-  const [currentVideo, setCurrentVideo] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  const loadSpecificRoadmap = (roadmap) => {
+  const loadSpecificRoadmap = useCallback((roadmap) => {
     setNodes(roadmap.nodes || []);
     setEdges(roadmap.edges || []);
     setRoadmapTitle(roadmap.title || "");
     setCurrentRoadmapId(roadmap.id);
     setSkill(roadmap.skill || "");
     setSelectedNode(null);
-    setIsPlaying(false);
-  };
+  }, [setNodes, setEdges]);
 
   useEffect(() => {
     const loadNotes = async () => {
@@ -94,7 +88,7 @@ export default function Roadmap({ user, profileImage }) {
       }
     };
     loadRoadmaps();
-  }, [user]);
+  }, [user, loadSpecificRoadmap, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge({ ...params, animated: true, markerEnd: { type: MarkerType.ArrowClosed } }, eds)),

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./video.css";
 import Custom_player from "../customplayer/Custom_player";
 import { fetchApi } from "../../services/api";
@@ -32,16 +32,14 @@ export default function Video({
     const watchTimeRef = useRef(0);
     const syncedWatchTimeRef = useRef(0);
 
-    if (!video) return null;
-
-    const videoId = video.id.videoId;
+    const videoId = video?.id?.videoId;
 
     useEffect(() => {
         watchTimeRef.current = watchTime;
     }, [watchTime]);
 
-    const syncWatchSession = async () => {
-        if (!user) return;
+    const syncWatchSession = useCallback(async () => {
+        if (!user || !video) return;
 
         // Force a flush from the player child
         const flushed = playerRef.current?.flushWatchTime?.() || 0;
@@ -73,7 +71,7 @@ export default function Video({
             // Rollback on failure if we want to retry next time
             syncedWatchTimeRef.current = previousSynced;
         }
-    };
+    }, [user, video]);
 
     // Fetch full video description
     useEffect(() => {
@@ -82,23 +80,23 @@ export default function Video({
             syncedWatchTimeRef.current = 0;
             const fetchVideoDetails = async () => {
                 try {
-                    const data = await fetchYoutube('videos', {
+                    const resData = await fetchYoutube('videos', {
                         part: "snippet",
                         id: videoId
                     });
-                    if (data.items && data.items.length > 0) {
-                        setFullDescription(data.items[0].snippet.description);
+                    if (resData.items && resData.items.length > 0) {
+                        setFullDescription(resData.items[0].snippet.description);
                     } else {
-                        setFullDescription(video.snippet.description);
+                        setFullDescription(video?.snippet?.description || "");
                     }
                 } catch (err) {
                     console.error("Error fetching full description:", err);
-                    setFullDescription(video.snippet.description);
+                    setFullDescription(video?.snippet?.description || "");
                 }
             };
             fetchVideoDetails();
         }
-    }, [videoId, video.snippet.description]);
+    }, [videoId, video?.snippet?.description]);
 
     useEffect(() => {
         const handleBeforeUnload = () => {
@@ -111,29 +109,31 @@ export default function Video({
             window.removeEventListener("beforeunload", handleBeforeUnload);
             syncWatchSession();
         };
-    }, [videoId, user]);
+    }, [syncWatchSession]);
 
     // Filter current video out of related videos
-    const relatedVideos = data.filter(
-        (item) => item.id.videoId !== video.id.videoId
-    );
+    const relatedVideos = (video && data)
+        ? data.filter((item) => item.id.videoId !== video.id.videoId)
+        : [];
 
     // Fetch notes
     useEffect(() => {
-        if (user && video.id.videoId) {
+        if (user && videoId) {
             setNotes("");
 
-            fetchApi('getNote', { username: user, videoId: video.id.videoId }, 'GET')
+            fetchApi('getNote', { username: user, videoId: videoId }, 'GET')
                 .then((res) => res.json())
-                .then((data) => {
-                    const fetchedContent = data.content || "";
+                .then((dataRes) => {
+                    const fetchedContent = dataRes.content || "";
                     setNotes(fetchedContent);
                 })
                 .catch((err) =>
                     console.error("Error fetching notes:", err)
                 );
         }
-    }, [user, video.id.videoId]);
+    }, [user, videoId]);
+
+    if (!video) return null;
 
     const handleSaveNotes = async () => {
         // Optimistic UI: Feedback is instant

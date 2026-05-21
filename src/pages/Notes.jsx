@@ -11,7 +11,6 @@ import {
     FiInbox
 } from "react-icons/fi";
 import Background from "../components/background/Background";
-const forgeLogo = "/forge.png";
 import "./notes.css";
 import { fetchApi } from "../services/api";
 import StatusDots from "../components/status/StatusDots";
@@ -53,7 +52,7 @@ const NotesSkeleton = () => (
     </div>
 );
 
-export default function Notes({ user, profileImage }) {
+export default function Notes({ user }) {
     const navigate = useNavigate();
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
