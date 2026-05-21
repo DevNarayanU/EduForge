@@ -335,8 +335,8 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
 
         <header className="profile-topbar">
           <div>
-            <p>{isOwnProfile ? "My Profile" : "Public Profile"}</p>
-            <h1>{profile.display_name || targetUser}</h1>
+            <p>{isOwnProfile ? "Workspace" : "Learner"}</p>
+            <h1>{isOwnProfile ? "My Dashboard" : "Profile"}</h1>
           </div>
           <div className="profile-topbar-actions">
             <StatusDots />

@@ -89,13 +89,22 @@ export default function Leaderboard() {
                 </div>
 
                 <header className="leaderboard-header">
-                    <h1>Hall of Flame</h1>
+                    <h1>Leaderboard</h1>
                     <p>The top minds in the EduForge ecosystem</p>
                 </header>
 
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '4rem' }}>
-                        <div className="skeleton" style={{ height: '300px', borderRadius: '24px' }}></div>
+                    <div className="leaderboard-skeleton">
+                        <div className="podium-container">
+                            <div className="podium-item skeleton" style={{ height: '240px' }}></div>
+                            <div className="podium-item skeleton" style={{ height: '280px' }}></div>
+                            <div className="podium-item skeleton" style={{ height: '220px' }}></div>
+                        </div>
+                        <div className="leaderboard-list">
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <div key={i} className="leaderboard-row skeleton" style={{ height: '70px', marginBottom: '0.65rem' }}></div>
+                            ))}
+                        </div>
                     </div>
                 ) : (
                     <>

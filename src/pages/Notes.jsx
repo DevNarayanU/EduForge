@@ -103,7 +103,7 @@ export default function Notes({ user }) {
                 <header className="notes-header">
                     <div className="notes-title-section">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <button className="btn-icon" onClick={() => navigate("/profile")} style={{ marginBottom: 0 }}>
+                            <button className="notes-back-btn" onClick={() => navigate("/profile")}>
                                 <FiArrowLeft /> Back to Profile
                             </button>
                             <StatusDots />

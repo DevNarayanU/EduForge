@@ -677,6 +677,10 @@
 .profile-skeleton {
   position: relative;
   overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 24px;
+  backdrop-filter: blur(16px);
 }
 
 .main-skeleton {
@@ -699,8 +703,8 @@
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
-  animation: profileShimmer 1.4s infinite;
+  background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.05) 50%, transparent 75%);
+  animation: profileShimmer 1.6s infinite ease-in-out;
 }
 
 @keyframes profileShimmer {
