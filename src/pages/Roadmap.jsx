@@ -121,11 +121,12 @@ export default function Roadmap({ user, profileImage }) {
     const verifyAndFixVideo = async () => {
       const url = videoRes.url;
       const videoId = getYouTubeId(url);
+      const isRickAstley = videoId === 'dQw4w9WgXcQ';
 
       updateResourceInState(selectedNode.id, videoRes, { isVerifying: true });
 
       let videoExists = false;
-      if (videoId) {
+      if (videoId && !isRickAstley) {
         try {
           const data = await fetchYoutube('videos', { part: 'id', id: videoId });
           if (data && data.items && data.items.length > 0) {
