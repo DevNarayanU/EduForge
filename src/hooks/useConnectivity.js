@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../services/supabaseClient';
 
 export function useConnectivity() {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -37,21 +38,21 @@ export function useConnectivity() {
         // Check backend status (Supabase)
         const checkBackend = async () => {
             try {
-                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-                const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-                if (!supabaseUrl) {
-                    setBackendStatus('offline');
-                    return;
-                }
-                const res = await fetch(`${supabaseUrl}/rest/v1/`, {
-                    headers: {
-                        apikey: supabaseKey,
-                        Authorization: `Bearer ${supabaseKey}`
+                const { error } = await supabase.from('profiles').select('id').limit(1);
+                if (error) {
+                    console.warn("[connectivity] Supabase check returned error:", error);
+                    // Network errors or authentication errors mean backend is offline/unreachable
+                    if (error.message?.includes('fetch') || error.status === 401 || error.status === 403) {
+                        setBackendStatus('offline');
+                    } else {
+                        // Other database/RLS errors mean the server is reachable and online
+                        setBackendStatus('online');
                     }
-                });
-                if (res.ok) setBackendStatus('online');
-                else setBackendStatus('offline');
-            } catch {
+                } else {
+                    setBackendStatus('online');
+                }
+            } catch (err) {
+                console.error("[connectivity] Supabase check failed:", err);
                 setBackendStatus('offline');
             }
         };
