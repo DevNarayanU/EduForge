@@ -140,7 +140,12 @@ export default function Roadmap({ user, profileImage }) {
         updateResourceInState(selectedNode.id, videoRes, { verified: true, isVerifying: false });
       } else {
         try {
-          const query = `${selectedNode.data.label} ${roadmapTitle || skill || ''} tutorial`.trim();
+          const skillLower = (skill || roadmapTitle || "").toLowerCase().trim();
+          const titleLower = (videoRes.title || "").toLowerCase();
+          const query = titleLower.includes(skillLower) 
+            ? videoRes.title 
+            : `${skill || roadmapTitle || ""} ${videoRes.title}`.trim();
+
           const searchData = await fetchYoutube('search', {
             q: query,
             maxResults: 1,
@@ -149,16 +154,30 @@ export default function Roadmap({ user, profileImage }) {
           });
 
           if (searchData && searchData.items && searchData.items.length > 0) {
-            const newVideoId = searchData.items[0].id.videoId;
-            const newUrl = `https://www.youtube.com/watch?v=${newVideoId}`;
-            const newTitle = searchData.items[0].snippet.title;
+            const videoSnippet = searchData.items[0].snippet;
+            const resTitleLower = videoSnippet.title.toLowerCase();
+            const resDescLower = videoSnippet.description.toLowerCase();
+            const labelLower = selectedNode.data.label.toLowerCase().trim();
 
-            updateResourceInState(selectedNode.id, videoRes, {
-              url: newUrl,
-              title: newTitle,
-              verified: true,
-              isVerifying: false
-            });
+            const isRelevant = 
+              (skillLower && (resTitleLower.includes(skillLower) || resDescLower.includes(skillLower))) ||
+              (labelLower && (resTitleLower.includes(labelLower) || resDescLower.includes(labelLower)));
+
+            if (isRelevant) {
+              const newVideoId = searchData.items[0].id.videoId;
+              const newUrl = `https://www.youtube.com/watch?v=${newVideoId}`;
+              const newTitle = videoSnippet.title;
+
+              updateResourceInState(selectedNode.id, videoRes, {
+                url: newUrl,
+                title: newTitle,
+                verified: true,
+                isVerifying: false
+              });
+            } else {
+              console.warn(`[YouTube Verification] Discarded irrelevant search result: "${videoSnippet.title}" for query: "${query}"`);
+              removeResourceFromState(selectedNode.id, videoRes);
+            }
           } else {
             removeResourceFromState(selectedNode.id, videoRes);
           }

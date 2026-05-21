@@ -34,7 +34,7 @@ serve(async (req) => {
 
     const prompt = `Create a professional, highly detailed learning roadmap for '${skill}' in JSON format.
 For each node, provide exactly 2 high-quality resources:
-1. One 'video' resource: Search for a verified, highly-rated YouTube video and return its full URL. Ensure the video title is accurate.
+1. One 'video' resource: Provide a highly descriptive, search-friendly title for a real, top-quality educational YouTube video on this topic (e.g., 'React Crash Course for Beginners' or 'Docker Containers Explained'). Provide a standard YouTube URL format for it (you can use a dummy URL format as we will verify and search-resolve it dynamically using your title).
 2. One 'article' resource: Provide a link to official documentation (e.g., MDN, Python.org) or a top-tier tutorial site (e.g., freeCodeCamp).
 Constraint: Max 8 nodes. Output ONLY the JSON object.
 Format: { "nodes": [{"id": "1", "label": "Topic", "resources": [{"type": "video", "title": "...", "url": "..."}, {"type": "article", "title": "...", "url": "..."}]}], "edges": [{"id": "e1-2", "source": "1", "target": "2"}] }.`;
