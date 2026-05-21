@@ -117,8 +117,9 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 });
                 if (error) throw new Error(error.message);
                 
-                // Clear cached maps on fresh login
+                // Clear cached maps and API cache on fresh login
                 usernameToIdMap.clear();
+                clearApiCache();
                 
                 // Also update login streak on login success
                 const profileId = authData.user.id;
@@ -350,6 +351,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                     .eq('id', profileId);
                 
                 if (error) throw new Error(error.message);
+                clearApiCache();
                 result = { status: 'success', profile: data };
                 break;
             }
@@ -363,6 +365,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                     .eq('id', profileId);
                 
                 if (error) throw new Error(error.message);
+                clearApiCache();
                 result = { status: 'success' };
                 break;
             }
@@ -396,12 +399,12 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 await Promise.all([
                     supabase
                         .from('user_stats')
-                        .update({
+                        .upsert({
+                            profile_id: profileId,
                             xp_score: nextScore,
                             watch_time_seconds: (stats?.watch_time_seconds || 0) + w,
                             level: nextLevel
-                        })
-                        .eq('profile_id', profileId),
+                        }, { onConflict: 'profile_id' }),
                     supabase
                         .from('activity')
                         .insert({
@@ -413,6 +416,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                         })
                 ]);
 
+                clearApiCache();
                 result = { status: 'success', xp_earned: xpGain };
                 break;
             }
@@ -431,6 +435,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                     }, { onConflict: 'profile_id,video_id' });
 
                 if (error) throw new Error(error.message);
+                clearApiCache();
                 result = { status: 'success' };
                 break;
             }
@@ -462,6 +467,8 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 
                 const { error } = await query;
                 if (error) throw new Error(error.message);
+                
+                clearApiCache();
                 
                 const { data: allRoadmaps } = await supabase
                     .from('roadmaps')

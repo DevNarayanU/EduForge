@@ -10,7 +10,8 @@ import {
   MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { AnimatePresence } from 'framer-motion';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiSend, FiSave, FiDownload, FiExternalLink, 
   FiYoutube, FiGlobe, FiX, FiPlus, FiTrash2, FiEdit3, FiFileText
