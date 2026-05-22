@@ -30,6 +30,7 @@ export default function NoteDetails({ user }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editedContent, setEditedContent] = useState("");
     const [editedTitle, setEditedTitle] = useState("");
+    const [isPrivate, setIsPrivate] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
@@ -53,6 +54,7 @@ export default function NoteDetails({ user }) {
                     setNote(data);
                     setEditedContent(data.content || "");
                     setEditedTitle(data.title || "Untitled Note");
+                    setIsPrivate(data.is_private || false);
                 }
             } catch (err) {
                 console.error("Error fetching note:", err);
@@ -84,6 +86,7 @@ export default function NoteDetails({ user }) {
             ...note,
             content: editedContent,
             title: editedTitle,
+            is_private: isPrivate,
             updated_at: new Date().toISOString()
         });
         setIsEditing(false);
@@ -95,7 +98,8 @@ export default function NoteDetails({ user }) {
                 username: user,
                 video_id: videoId,
                 content: editedContent,
-                title: editedTitle
+                title: editedTitle,
+                is_private: isPrivate
             }, 'POST', { 
                 queue: true,
                 debounceKey: `notes_${videoId}`
@@ -232,6 +236,16 @@ export default function NoteDetails({ user }) {
                             onChange={(e) => setEditedTitle(e.target.value)}
                             placeholder="Note Title"
                         />
+                        <div className="note-privacy-option-container">
+                            <label className="note-privacy-option-label">
+                                <input
+                                    type="checkbox"
+                                    checked={isPrivate}
+                                    onChange={(e) => setIsPrivate(e.target.checked)}
+                                />
+                                <span>🔒 Make this note private (only you can see it)</span>
+                            </label>
+                        </div>
                         <textarea 
                             className="markdown-textarea"
                             value={editedContent}
@@ -245,8 +259,13 @@ export default function NoteDetails({ user }) {
                 ) : (
                     <>
                         <header className="note-view-header">
-                            <h1>{note.title || "Untitled Note"}</h1>
-                            <div className="note-meta">
+                            <div className="note-title-row" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                <h1 style={{ margin: 0 }}>{note.title || "Untitled Note"}</h1>
+                                <span className={`privacy-badge ${note.is_private ? 'private' : 'public'}`}>
+                                    {note.is_private ? "🔒 Private" : "🔓 Public"}
+                                </span>
+                            </div>
+                            <div className="note-meta" style={{ marginTop: '0.75rem' }}>
                                 <span><FiCalendar /> {new Date(note.updated_at).toLocaleDateString()}</span>
                                 <span><FiClock /> {new Date(note.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>

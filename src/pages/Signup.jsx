@@ -12,10 +12,16 @@ function Signup(){
     const [password,setpassword] = useState("");
     const [repassword,setrepassword] = useState("");
     const [error, setError ] = useState("");
+    const [acceptTerms, setAcceptTerms] = useState(false);
 
     async function handleSignUp(e) {
         e.preventDefault();
         setError("");
+
+        if (!acceptTerms) {
+            setError("You must agree to the Terms of Conditions to create an account.");
+            return;
+        }
 
         const usernameRegex = /^[a-z0-9_]+$/;
         if (!usernameRegex.test(username)) {
@@ -109,6 +115,19 @@ function Signup(){
                     required
                     /> 
 
+                    <div className="signup-terms-checkbox">
+                        <input 
+                            type="checkbox" 
+                            id="accept-terms" 
+                            checked={acceptTerms}
+                            onChange={(e) => setAcceptTerms(e.target.checked)}
+                            required
+                        />
+                        <label htmlFor="accept-terms">
+                            I agree to the <Link to="/terms">Terms of Conditions</Link>
+                        </label>
+                    </div>
+
                     {error && 
                     !error.toLowerCase().includes("user") && (
                             <div className="error-container">
@@ -121,7 +140,7 @@ function Signup(){
 
                 <div className="signup-footer-links">
                     <Link to="/about">About</Link>
-                    <Link to="/terms">User Agreement</Link>
+                    <Link to="/terms">Terms of Conditions</Link>
                 </div>
                 
                 <div className="signup-status">

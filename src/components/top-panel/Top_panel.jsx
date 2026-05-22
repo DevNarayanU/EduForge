@@ -5,10 +5,12 @@ const forgeLogo = "/forge.png";
 import searchIcon from "../../assets/search.svg";
 import { FiFileText, FiAward, FiMap } from "react-icons/fi";
 import StatusDots from "../status/StatusDots";
+import { getCooldownTimeLeft } from "../../services/moderation";
 
 export default function Top_panel({ initialQuery, profileImage }){
     const [input,setinput] = useState(initialQuery||"");
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [cooldownTimeLeft, setCooldownTimeLeft] = useState(0);
 
     const navigate = useNavigate();
 
@@ -19,10 +21,20 @@ export default function Top_panel({ initialQuery, profileImage }){
     useEffect(() => {
         setinput(initialQuery || "");
     }, [initialQuery]);
+
+    useEffect(() => {
+        const checkCooldown = () => {
+            const timeLeft = getCooldownTimeLeft();
+            setCooldownTimeLeft(timeLeft);
+        };
+        checkCooldown();
+        const interval = setInterval(checkCooldown, 1000);
+        return () => clearInterval(interval);
+    }, []);
     
     const handlesubmit = (e) => {
         e.preventDefault();
-        if (!input.trim()) return;
+        if (!input.trim() || cooldownTimeLeft > 0) return;
         navigate(`/home?query=${encodeURIComponent(input)}`);
         setIsSearchOpen(false);
     }
@@ -36,11 +48,12 @@ export default function Top_panel({ initialQuery, profileImage }){
             <form onSubmit={handlesubmit} className="search-form">
                 <div className="wrapper-top">
                     <input type="search" 
-                    value={input}
+                    value={cooldownTimeLeft > 0 ? "" : input}
                     onChange={(e) => setinput(e.target.value)}
-                    placeholder="Search skills"
+                    placeholder={cooldownTimeLeft > 0 ? `Search temporarily paused (${cooldownTimeLeft}s)` : "Search skills"}
+                    disabled={cooldownTimeLeft > 0}
                     className="home-search" />
-                    <button type="submit" className="search-button">
+                    <button type="submit" className="search-button" disabled={cooldownTimeLeft > 0}>
                         <img src={searchIcon} alt="search" />
                     </button>
                 </div>
@@ -51,7 +64,8 @@ export default function Top_panel({ initialQuery, profileImage }){
 
                 <button 
                     className="mobile-search-toggle" 
-                    onClick={() => setIsSearchOpen(true)}
+                    onClick={() => cooldownTimeLeft <= 0 && setIsSearchOpen(true)}
+                    disabled={cooldownTimeLeft > 0}
                     aria-label="Open search"
                 >
                     <img src={searchIcon} alt="search" />

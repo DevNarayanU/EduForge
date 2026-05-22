@@ -24,7 +24,7 @@ const Terms = () => {
                 </div>
 
                 <header className="info-header">
-                    <h1>Terms of Service</h1>
+                    <h1>Terms of Conditions</h1>
                     <p className="subtitle">Last Updated: May 2026</p>
                 </header>
 
@@ -40,6 +40,7 @@ const Terms = () => {
                             <li>Maintain the security of your account.</li>
                             <li>Use the platform responsibly and legally.</li>
                             <li>You are responsible for all content you share.</li>
+                            <li>It is your strict duty not to search for or request any rude, 18+ (sexually explicit), violent, harmful, or irrelevant content.</li>
                         </ul>
                     </section>
 
@@ -51,6 +52,7 @@ const Terms = () => {
                             <li>Harassing, abusing, or threatening others.</li>
                             <li>Sharing illegal or copyrighted material.</li>
                             <li>Spamming or misusing platform services.</li>
+                            <li>Typing, posting, or sharing any irrelevant, non-educational, or off-topic content in public notes.</li>
                         </ul>
                     </section>
 
@@ -75,8 +77,8 @@ const Terms = () => {
                     </section>
 
                     <section>
-                        <h2>Future Features & AI</h2>
-                        <p>We may introduce AI-powered tools. While we strive for accuracy, AI-generated content should be independently verified by users.</p>
+                        <h2>Future Features & AI Disclaimer</h2>
+                        <p>We utilize AI-powered tools and safety filters to enhance the platform's utility. Please be advised that artificial intelligence can make mistakes. It is the user's strict duty and responsibility to refrain from searching for, generating, or attempting to access any rude, 18+ (sexually explicit), violent, harmful, or irrelevant content. Users accept full responsibility for ensuring their interactions with the platform remain appropriate, educational, and safe.</p>
                     </section>
 
                     <section>

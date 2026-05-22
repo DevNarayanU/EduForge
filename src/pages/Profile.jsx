@@ -884,7 +884,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
           <span className="separator">•</span>
           <Link to="/privacy">Privacy Policy</Link>
           <span className="separator">•</span>
-          <Link to="/terms">Terms of Service</Link>
+          <Link to="/terms">Terms of Conditions</Link>
         </footer>
       </main>
 

@@ -8,7 +8,8 @@ import { supabase } from './supabaseClient';
  */
 export const fetchYoutube = async (endpoint, params = {}) => {
     // 1. Check local cache first (6-hour TTL)
-    const cacheKey = `yt_cache_${endpoint}_${JSON.stringify(params)}`;
+    const currentUser = localStorage.getItem("user") || "anonymous";
+    const cacheKey = `yt_cache_${currentUser}_${endpoint}_${JSON.stringify(params)}`;
     try {
         const cached = localStorage.getItem(cacheKey);
         if (cached) {

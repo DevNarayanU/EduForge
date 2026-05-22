@@ -8,7 +8,9 @@ import {
     FiMoreVertical, 
     FiClock, 
     FiArrowLeft,
-    FiInbox
+    FiInbox,
+    FiLock,
+    FiUnlock
 } from "react-icons/fi";
 import Background from "../components/background/Background";
 import "./notes.css";
@@ -29,7 +31,12 @@ const NoteCard = ({ note, onClick }) => {
                 <div className="note-icon">
                     <FiFileText />
                 </div>
-                <span className="note-date">{date}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className={`privacy-badge-mini ${note.is_private ? 'private' : 'public'}`} title={note.is_private ? "Private Note" : "Public Note"}>
+                        {note.is_private ? <FiLock size={12} /> : <FiUnlock size={12} />}
+                    </span>
+                    <span className="note-date">{date}</span>
+                </div>
             </div>
             <div className="note-card-body">
                 <h3>{note.title || "Untitled Note"}</h3>

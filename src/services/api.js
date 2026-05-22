@@ -111,7 +111,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
         switch (action) {
             case 'login': {
                 const email = `${data.username.toLowerCase()}@eduforge.com`;
-                const { data: authData, error } = await supabase.auth.signInWithPassword({
+                const { error } = await supabase.auth.signInWithPassword({
                     email,
                     password: data.password
                 });
@@ -415,15 +415,19 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
             case 'saveNotes': {
                 const profileId = await getProfileId(data.username);
                 if (!profileId) throw new Error('User not found');
+                const payload = {
+                    profile_id: profileId,
+                    video_id: data.video_id,
+                    title: data.title || 'Untitled Note',
+                    content: data.content,
+                    updated_at: new Date().toISOString()
+                };
+                if (data.is_private !== undefined) {
+                    payload.is_private = data.is_private;
+                }
                 const { error } = await supabase
                     .from('notes')
-                    .upsert({
-                        profile_id: profileId,
-                        video_id: data.video_id,
-                        title: data.title || 'Untitled Note',
-                        content: data.content,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'profile_id,video_id' });
+                    .upsert(payload, { onConflict: 'profile_id,video_id' });
 
                 if (error) throw new Error(error.message);
                 clearApiCache();

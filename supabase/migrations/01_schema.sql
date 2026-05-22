@@ -37,6 +37,7 @@ CREATE TABLE public.notes (
     video_id TEXT NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
+    is_private BOOLEAN DEFAULT false NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     CONSTRAINT unique_profile_video_note UNIQUE (profile_id, video_id)
 );
@@ -101,9 +102,9 @@ ON public.user_stats FOR INSERT
 WITH CHECK (auth.uid() = profile_id);
 
 -- Notes Policies
-CREATE POLICY "Users can view their own notes" 
+CREATE POLICY "Users can view their own notes or public notes" 
 ON public.notes FOR SELECT 
-USING (auth.uid() = profile_id);
+USING (auth.uid() = profile_id OR NOT is_private);
 
 CREATE POLICY "Users can insert their own notes" 
 ON public.notes FOR INSERT 

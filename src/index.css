@@ -440,7 +440,7 @@ body{
 
   background-color: rgba(10, 7, 20, 0.102);
 
-  height: 550px;
+  height: 610px;
   width: 430px;
 
   margin: auto;
@@ -499,6 +499,39 @@ body{
   font-size: 17px;
 
   border: 1px solid rgba(255,255,255,0.3);
+}
+
+.signup-terms-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0 5px 0;
+}
+
+.signup-terms-checkbox input[type="checkbox"] {
+  all: revert;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #008cff;
+}
+
+.signup-terms-checkbox label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  cursor: pointer;
+  font-family: Urbanist;
+}
+
+.signup-terms-checkbox label a {
+  color: #008cff;
+  text-decoration: underline;
+  font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  display: inline;
 }
 
 .signup-container button {

@@ -22,6 +22,7 @@ export default function Video({
     user
 }) {
     const [notes, setNotes] = useState("");
+    const [isPrivate, setIsPrivate] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [watchTime, setWatchTime] = useState(0);
     const [showRelated, setShowRelated] = useState(false);
@@ -120,12 +121,14 @@ export default function Video({
     useEffect(() => {
         if (user && videoId) {
             setNotes("");
+            setIsPrivate(false);
 
             fetchApi('getNote', { username: user, videoId: videoId }, 'GET')
                 .then((res) => res.json())
                 .then((dataRes) => {
                     const fetchedContent = dataRes.content || "";
                     setNotes(fetchedContent);
+                    setIsPrivate(dataRes.is_private || false);
                 })
                 .catch((err) =>
                     console.error("Error fetching notes:", err)
@@ -145,7 +148,8 @@ export default function Video({
                 username: user,
                 video_id: video.id.videoId,
                 content: notes,
-                title: video.snippet.title
+                title: video.snippet.title,
+                is_private: isPrivate
             }, 'POST', { 
                 queue: false 
             });
@@ -265,6 +269,17 @@ export default function Video({
                             >
                                 {isSaving ? "Saving..." : "Save Notes"}
                             </button>
+                        </div>
+
+                        <div className="notes-options-row">
+                            <label className="notes-privacy-label">
+                                <input
+                                    type="checkbox"
+                                    checked={isPrivate}
+                                    onChange={(e) => setIsPrivate(e.target.checked)}
+                                />
+                                <span>🔒 Make note private</span>
+                            </label>
                         </div>
 
                         <div className="notes-editor-wrapper">

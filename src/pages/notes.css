@@ -680,3 +680,77 @@
         top: 1rem;
     }
 }
+
+/* Privacy Badges and Settings Styles */
+.privacy-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Trispace', sans-serif;
+}
+
+.privacy-badge.public {
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+.privacy-badge.private {
+    background: rgba(244, 63, 94, 0.08);
+    border: 1px solid rgba(244, 63, 94, 0.15);
+    color: #fb7185;
+}
+
+.privacy-badge-mini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+}
+
+.privacy-badge-mini.public {
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+.privacy-badge-mini.private {
+    background: rgba(244, 63, 94, 0.08);
+    border: 1px solid rgba(244, 63, 94, 0.15);
+    color: #fb7185;
+}
+
+.note-privacy-option-container {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+}
+
+.note-privacy-option-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+}
+
+.note-privacy-option-label input[type="checkbox"] {
+    accent-color: #6366f1;
+    cursor: pointer;
+}
+
