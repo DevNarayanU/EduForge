@@ -1,0 +1,22 @@
+{
+  "short_name": "EduForge",
+  "name": "EduForge",
+  "description": "Forge your educational journey with EduForge",
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#000000",
+  "theme_color": "#008cff",
+  "display": "standalone",
+  "orientation": "portrait"
+}
