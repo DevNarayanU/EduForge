@@ -482,6 +482,30 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 break;
             }
 
+            case 'deleteData': {
+                const { data: functionData, error } = await supabase.functions.invoke('reset-data');
+                
+                if (error) throw new Error(error.message);
+                if (functionData?.error) throw new Error(functionData.error);
+                
+                clearApiCache();
+                result = { status: 'success' };
+                break;
+            }
+
+            case 'deleteAccount': {
+                const { data: functionData, error } = await supabase.functions.invoke('delete-account');
+                
+                if (error) throw new Error(error.message);
+                if (functionData?.error) throw new Error(functionData.error);
+                
+                await supabase.auth.signOut();
+                clearApiCache();
+                
+                result = { status: 'success' };
+                break;
+            }
+
             default:
                 throw new Error(`Unknown action: ${action}`);
         }

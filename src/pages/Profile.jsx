@@ -7,6 +7,7 @@ const forgeLogo = "/forge.png";
 import { fetchApi, clearApiCache } from "../services/api";
 import { supabase } from "../services/supabaseClient";
 import StatusDots from "../components/status/StatusDots";
+import { FiCopy, FiCheck } from "react-icons/fi";
 
 import "./profile.css";
 
@@ -109,6 +110,10 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [activeTab, setActiveTab] = useState("roadmaps");
+  const [showDeleteModal, setShowDeleteModal] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setActiveTab(isOwnProfile ? "roadmaps" : "notes");
@@ -395,6 +400,42 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
     navigate("/login");
   };
 
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    setError("");
+    setMessage("");
+    try {
+      await fetchApi('deleteAccount', {}, 'POST');
+      navigate("/login");
+    } catch (err) {
+      setError(err.message || "Failed to delete account.");
+      setShowDeleteModal(null);
+    } finally {
+      setIsDeleting(false);
+      setConfirmText("");
+    }
+  };
+
+  const handleDeleteData = async () => {
+    setIsDeleting(true);
+    setError("");
+    setMessage("");
+    try {
+      await fetchApi('deleteData', { username: user }, 'POST');
+      setMessage("Learning data has been reset successfully.");
+      setShowDeleteModal(null);
+      setConfirmText("");
+      // Force UI refresh via global event
+      if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('api-data-mutated'));
+      }
+    } catch (err) {
+      setError(err.message || "Failed to reset learning data.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -594,6 +635,29 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
                           />
                         </label>
                       ))}
+                    </div>
+                  </div>
+
+                  <div className="profile-edit-block" style={{ borderTopColor: 'rgba(239, 68, 68, 0.2)' }}>
+                    <p className="profile-edit-label" style={{ color: '#ef4444' }}>Danger zone</p>
+                    <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px', marginBottom: '16px' }}>Permanently reset your learning data or completely delete your account.</p>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      <button 
+                        type="button" 
+                        className="profile-danger-button" 
+                        onClick={() => { setShowDeleteModal('data'); setConfirmText(''); setCopied(false); }}
+                        style={{ flex: 1, justifyContent: 'center' }}
+                      >
+                        Reset Learning Data
+                      </button>
+                      <button 
+                        type="button" 
+                        className="profile-danger-button" 
+                        onClick={() => { setShowDeleteModal('account'); setConfirmText(''); setCopied(false); }}
+                        style={{ flex: 1, justifyContent: 'center' }}
+                      >
+                        Delete Account
+                      </button>
                     </div>
                   </div>
 
@@ -812,13 +876,74 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
         )}
 
         <footer className="profile-minimal-footer">
-          <Link to="/about">About</Link>
+          <Link to="/about">About EduForge</Link>
           <span className="separator">•</span>
-          <Link to="/contact">Contact Us</Link>
+          <Link to="/privacy">Privacy Policy</Link>
           <span className="separator">•</span>
-          <Link to="/terms">Terms & Conditions</Link>
+          <Link to="/terms">Terms of Service</Link>
         </footer>
       </main>
+
+      {showDeleteModal && (
+        <div className="profile-modal-overlay">
+          <div className="profile-modal-content">
+            <div className="profile-modal-icon">⚠️</div>
+            <h3>{showDeleteModal === 'account' ? 'Delete Account?' : 'Reset Learning Data?'}</h3>
+            <p>
+              {showDeleteModal === 'account' 
+                ? "This action is completely irreversible. All of your saved roadmaps, notes, watch time, and profile data will be permanently wiped."
+                : "This will reset your level, XP, streak, and delete all of your saved roadmaps, notes, and activity history. Your profile details will remain."
+              }
+            </p>
+            
+            <div className="profile-modal-phrase-box">
+              <strong>{showDeleteModal === 'account' ? 'deleteaccountconfirmed' : 'deletedataconfirmed'}</strong>
+              <button 
+                type="button" 
+                className="profile-modal-copy-btn"
+                onClick={() => {
+                  navigator.clipboard.writeText(showDeleteModal === 'account' ? 'deleteaccountconfirmed' : 'deletedataconfirmed');
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                title="Copy to clipboard"
+              >
+                {copied ? <FiCheck /> : <FiCopy />}
+              </button>
+            </div>
+
+            <div className="profile-modal-input-group">
+              <input 
+                type="text" 
+                className="profile-modal-input" 
+                placeholder={`Type "${showDeleteModal === 'account' ? 'deleteaccountconfirmed' : 'deletedataconfirmed'}" to confirm`}
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+
+            <div className="profile-modal-actions">
+              <button 
+                type="button"
+                className="btn-cancel-modal" 
+                onClick={() => { setShowDeleteModal(null); setConfirmText(""); }}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                className="btn-confirm-delete" 
+                onClick={showDeleteModal === 'account' ? handleDeleteAccount : handleDeleteData}
+                disabled={isDeleting || confirmText !== (showDeleteModal === 'account' ? 'deleteaccountconfirmed' : 'deletedataconfirmed')}
+              >
+                {isDeleting ? "Processing..." : "Yes, I am sure"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

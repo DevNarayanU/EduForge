@@ -11,6 +11,7 @@ import Roadmap from "./pages/Roadmap";
 import About from "./pages/info/About";
 import Contact from "./pages/info/Contact";
 import Terms from "./pages/info/Terms";
+import BuyUsChai from "./components/buyuschai/BuyUsChai";
 import { useState,useEffect } from "react";
 import { fetchApi } from "./services/api";
 import { supabase } from "./services/supabaseClient";
@@ -95,6 +96,7 @@ function App() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/terms" element={<Terms />} />
     </Routes>
+    <BuyUsChai />
     </>
   )
 }
