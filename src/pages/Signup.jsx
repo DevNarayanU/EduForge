@@ -73,6 +73,7 @@ function Signup(){
                     value={username}
                     onChange={(e) => setusername(e.target.value)}
                     className={error.includes("user") ? "input-error" : ""}
+                    autocomplete="username"
                     required
                     />
                     {error.toLowerCase().includes("user") && (
@@ -87,8 +88,8 @@ function Signup(){
                     value={password}
                     className={password.length > 0 ? "success" : ""}
                     onChange={(e) => setpassword(e.target.value)}
+                    autocomplete="new-password"
                     required
-
                     />    
                     
                     <label htmlFor="signup-confirm-pass">Confirm Password</label>
@@ -104,6 +105,7 @@ function Signup(){
                     placeholder="Confirm Password"
                     value={repassword}
                     onChange={(e) => setrepassword(e.target.value)}
+                    autocomplete="new-password"
                     required
                     /> 
 

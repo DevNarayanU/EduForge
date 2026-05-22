@@ -73,6 +73,7 @@ function Login({ setuser }) {
                             value={username}
                             onChange={(e) => setusername(e.target.value)}
                             className={error.includes("user") ? "input-error" : ""}
+                            autocomplete="username"
                             required
                         />
                         {error.toLowerCase().includes("user") && (
@@ -87,6 +88,7 @@ function Login({ setuser }) {
                             value={password}
                             onChange={(e) => setpassword(e.target.value)}
                             className={error.includes("Password") ? "input-error" : ""}
+                            autocomplete="current-password"
                             required
                         />
                         
