@@ -8,7 +8,7 @@ export default function BuyUsChai() {
   const [copied, setCopied] = useState(false);
   
   // Replace this with the exact UPI ID once provided
-  const upiId = "your_upi_id@bank";
+  const upiId = "7012879159@ybl";
 
   const copyUpi = () => {
     navigator.clipboard.writeText(upiId);
