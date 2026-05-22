@@ -55,7 +55,7 @@ export default function Heatmap({ username }) {
 
   return (
     <div className="heatmap-wrapper">
-      <h2 className="heatmap-title">Login Activity</h2>
+      <h2 className="heatmap-title">Learning Activity</h2>
 
       <div 
         className="heatmap-container"

@@ -17,6 +17,12 @@ function Signup(){
         e.preventDefault();
         setError("");
 
+        const usernameRegex = /^[a-z0-9_]+$/;
+        if (!usernameRegex.test(username)) {
+            setError("Username can only contain lowercase letters, numbers, and underscores (no spaces or capitals).");
+            return;
+        }
+
         if (password !== repassword){
             return;
         }

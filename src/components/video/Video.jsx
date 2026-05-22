@@ -147,8 +147,7 @@ export default function Video({
                 content: notes,
                 title: video.snippet.title
             }, 'POST', { 
-                queue: true, 
-                debounceKey: `notes_${video.id.videoId}` 
+                queue: false 
             });
         } catch (err) {
             console.error("Error saving notes:", err);
@@ -199,7 +198,7 @@ export default function Video({
                                 }}
                             >
                                 <img
-                                    src={item.snippet.thumbnails.medium.url}
+                                    src={item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.high?.url || ''}
                                     alt={item.snippet.title}
                                     className="related-card-thumb"
                                 />

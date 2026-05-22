@@ -9,12 +9,29 @@ import { fetchYoutube } from "../services/youtube";
 import { ALLOWED_CHANNELS } from "../constants";
 
 
+
+function HomecardSkeleton() {
+    return (
+        <div className="card-wrapper">
+            {[...Array(6)].map((_, i) => (
+                <div className="card" key={i} style={{ pointerEvents: 'none', background: 'rgba(255,255,255,0.01)' }}>
+                    <div className="image-properties skeleton" style={{ borderRadius: '0' }} />
+                    <div className="skeleton" style={{ height: '16px', margin: '16px 12px 6px', width: '80%', borderRadius: '4px' }} />
+                    <div className="skeleton" style={{ height: '12px', margin: '0 12px 16px', width: '50%', borderRadius: '4px' }} />
+                </div>
+            ))}
+        </div>
+    );
+}
+
 function Home({user, profileImage}){
 const [data,setdata] = useState([]);
 const [isplaying,setisplaying] = useState(false);
 const [currentVideo, setcurrentVideo] = useState(null);
 const [isLoadingInitial, setIsLoadingInitial] = useState(false);
+const [isLoadingSearch, setIsLoadingSearch] = useState(false);
 const [trendingTags, setTrendingTags] = useState(["React", "Python", "JavaScript", "AI", "DevOps", "Cybersecurity"]);
+const [hasAttemptedInitial, setHasAttemptedInitial] = useState(false);
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -56,9 +73,51 @@ const [trendingTags, setTrendingTags] = useState(["React", "Python", "JavaScript
         }
     }, [autoPlayId, currentVideo, hasAttemptedAutoplay]);
 
-    // Fetch latest skills from multiple APIs if no query is present
-    const [hasAttemptedInitial, setHasAttemptedInitial] = useState(false);
+    // Clear search data and reset initial attempt state when query is cleared
+    useEffect(() => {
+        if (!urlQuery) {
+            setdata([]);
+            setHasAttemptedInitial(false);
+        }
+    }, [urlQuery]);
 
+    // Fetch search query results
+    useEffect(() => {
+        if (!urlQuery) return;
+
+        const fetchSearch = async () => {
+            setIsLoadingSearch(true);
+            setisplaying(false); // Stop playback on new search
+            try {
+                const json = await fetchYoutube('search', {
+                    part: "snippet",
+                    q: urlQuery,
+                    type: "video",
+                    maxResults: 30,
+                    fields: "items(id/videoId,snippet(title,channelTitle,description,thumbnails/medium/url))"
+                });
+
+                console.log("Raw YouTube search data:", json.items);
+
+                const filtered = (json.items || []).filter(item =>
+                    item.snippet && ALLOWED_CHANNELS.some(ch =>
+                        item.snippet.channelTitle.trim().toLowerCase() === ch.trim().toLowerCase()
+                    )
+                );
+
+                console.log("Filtered search data count:", filtered.length);
+                setdata(filtered);
+            } catch (err) {
+                console.error("YouTube search error in Home.jsx:", err);
+            } finally {
+                setIsLoadingSearch(false);
+            }
+        };
+
+        fetchSearch();
+    }, [urlQuery]);
+
+    // Fetch latest skills from multiple APIs if no query is present
     useEffect(() => {
         const fetchInitialSkills = async () => {
             // Only fetch if no search query, no data yet, not already loading, and haven't attempted yet
@@ -90,7 +149,8 @@ const [trendingTags, setTrendingTags] = useState(["React", "Python", "JavaScript
                             part: "snippet",
                             q: `latest ${topic} full course`,
                             type: "video",
-                            maxResults: 5 // Reduced from 8 to 5
+                            maxResults: 5,
+                            fields: "items(id/videoId,snippet(title,channelTitle,description,thumbnails/medium/url))"
                         });
                         if (json.items) {
                             allVideos.push(...json.items);
@@ -123,7 +183,7 @@ const [trendingTags, setTrendingTags] = useState(["React", "Python", "JavaScript
 return(
 <div className="home-container">
 
-<Top_panel data={data} setdata={setdata} setisplaying={setisplaying} initialQuery={urlQuery} user={user} profileImage={profileImage}/>
+<Top_panel initialQuery={urlQuery} profileImage={profileImage}/>
 <Background />
 
 {isplaying=== false && (
@@ -139,14 +199,16 @@ return(
             </div>
         </div>
         
-        {data.length > 0 ? (
+        {isLoadingInitial || isLoadingSearch ? (
+            <HomecardSkeleton />
+        ) : data.length > 0 ? (
             <Homecard data={data} setisplaying={setisplaying} setcurrentVideo={setcurrentVideo} />
         ) : (
             <div className="no-results">
                 {urlQuery ? (
                     <p>No trusted tutorials found for "{urlQuery}". Try a broader topic.</p>
                 ) : (
-                    !isLoadingInitial && <p>Searching for high-quality tutorials...</p>
+                    <p>Searching for high-quality tutorials...</p>
                 )}
             </div>
         )}

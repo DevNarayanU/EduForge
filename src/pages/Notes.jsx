@@ -83,6 +83,24 @@ export default function Notes({ user }) {
         fetchNotes();
     }, [user, navigate]);
 
+    useEffect(() => {
+        if (!user) return;
+
+        const notesCacheKey = `cache_getNotes_${JSON.stringify({ username: user })}`;
+
+        const handleCacheUpdate = (event) => {
+            const { cacheKey, data } = event.detail;
+            if (cacheKey === notesCacheKey && data) {
+                setNotes(data);
+            }
+        };
+
+        window.addEventListener('api-cache-updated', handleCacheUpdate);
+        return () => {
+            window.removeEventListener('api-cache-updated', handleCacheUpdate);
+        };
+    }, [user]);
+
     const filteredNotes = notes
         .filter(note => 
             (note.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 

@@ -4,7 +4,8 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import Background from "../components/background/Background";
 import Heatmap from "../components/Heatmap/Heatmap";
 const forgeLogo = "/forge.png";
-import { fetchApi } from "../services/api";
+import { fetchApi, clearApiCache } from "../services/api";
+import { supabase } from "../services/supabaseClient";
 import StatusDots from "../components/status/StatusDots";
 
 import "./profile.css";
@@ -196,6 +197,76 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
     };
   }, [targetUser, user, isOwnProfile, setGlobalProfileImage]);
 
+  useEffect(() => {
+    if (!targetUser) return;
+
+    const profileCacheKey = `cache_getProfile_${JSON.stringify({ username: targetUser })}`;
+    const statsCacheKey = `cache_getProfileStats_${JSON.stringify({ username: targetUser })}`;
+
+    const handleCacheUpdate = (event) => {
+      const { cacheKey, data } = event.detail;
+
+      if (cacheKey === profileCacheKey && data) {
+        const loadedProfile = data.profile || EMPTY_PROFILE;
+        const loadedSocials = data.socials || EMPTY_SOCIALS;
+
+        setProfile(loadedProfile);
+        setSocials(loadedSocials);
+
+        if (isOwnProfile && !isEditing) {
+          setForm({
+            display_name: loadedProfile.display_name || user,
+            bio: loadedProfile.bio || "",
+            role_title: loadedProfile.role_title || "",
+            profile_image_url: loadedProfile.profile_image_url || "",
+            location: loadedProfile.location || "",
+            timezone: loadedProfile.timezone || "",
+            website: loadedProfile.website || "",
+            skills: loadedProfile.skills || [],
+          });
+          setFormSocials(loadedSocials);
+
+          if (loadedProfile.profile_image_url) {
+            setGlobalProfileImage?.(loadedProfile.profile_image_url);
+          } else {
+            setGlobalProfileImage?.(forgeLogo);
+          }
+        }
+      }
+
+      if (cacheKey === statsCacheKey && data) {
+        setStats(data || EMPTY_STATS);
+      }
+    };
+
+    const handleDataMutated = () => {
+      // Re-fetch silently without showing skeleton loaders
+      fetchApi('getProfileStats', { username: targetUser }, 'GET', { useCache: false })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.error) setStats(data || EMPTY_STATS);
+        })
+        .catch(console.error);
+        
+      fetchApi('getProfile', { username: targetUser }, 'GET', { useCache: false })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.error && data.profile) {
+                setProfile(data.profile);
+                setSocials(data.socials || EMPTY_SOCIALS);
+            }
+        })
+        .catch(console.error);
+    };
+
+    window.addEventListener("api-cache-updated", handleCacheUpdate);
+    window.addEventListener("api-data-mutated", handleDataMutated);
+    return () => {
+      window.removeEventListener("api-cache-updated", handleCacheUpdate);
+      window.removeEventListener("api-data-mutated", handleDataMutated);
+    };
+  }, [targetUser, user, isOwnProfile, isEditing, setGlobalProfileImage]);
+
   const previewProfile = isEditing ? {
     ...profile,
     display_name: form.display_name,
@@ -312,7 +383,13 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error("Error signing out from Supabase:", e);
+    }
+    clearApiCache();
     localStorage.removeItem("user");
     setuser?.("");
     navigate("/login");

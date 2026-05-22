@@ -69,6 +69,22 @@ export default function Leaderboard() {
         fetchLeaderboard();
     }, []);
 
+    useEffect(() => {
+        const leaderboardCacheKey = `cache_getLeaderboard_${JSON.stringify({})}`;
+
+        const handleCacheUpdate = (event) => {
+            const { cacheKey, data } = event.detail;
+            if (cacheKey === leaderboardCacheKey && data) {
+                setLeaderboard(data);
+            }
+        };
+
+        window.addEventListener('api-cache-updated', handleCacheUpdate);
+        return () => {
+            window.removeEventListener('api-cache-updated', handleCacheUpdate);
+        };
+    }, []);
+
     const handleUserClick = (targetUsername) => {
         navigate(`/profile/${encodeURIComponent(targetUsername)}`);
     };
@@ -82,7 +98,7 @@ export default function Leaderboard() {
             
             <div className="leaderboard-container">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <button className="btn-icon" onClick={() => navigate("/home")} style={{ marginBottom: 0 }}>
+                    <button className="leaderboard-back-btn" onClick={() => navigate("/home")}>
                         <FiArrowLeft /> Back to Home
                     </button>
                     <StatusDots />

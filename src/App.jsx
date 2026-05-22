@@ -32,6 +32,8 @@ function App() {
         if (username) {
           setuser(username);
         }
+      } else {
+        setuser("");
       }
     });
 

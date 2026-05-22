@@ -29,7 +29,7 @@ async function getProfileId(username) {
     const { data } = await supabase
         .from('profiles')
         .select('id')
-        .eq('username', lowerName)
+        .ilike('username', username)
         .maybeSingle();
     
     if (data?.id) {
@@ -120,27 +120,6 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 // Clear cached maps and API cache on fresh login
                 usernameToIdMap.clear();
                 clearApiCache();
-                
-                // Also update login streak on login success
-                const profileId = authData.user.id;
-                const { data: stats } = await supabase
-                    .from('user_stats')
-                    .select('streak_dates, streak')
-                    .eq('profile_id', profileId)
-                    .maybeSingle();
-
-                const streakDates = stats?.streak_dates || [];
-                const todayStr = new Date().toISOString().split('T')[0];
-                if (!streakDates.includes(todayStr)) {
-                    const newDates = [...streakDates, todayStr];
-                    await supabase
-                        .from('user_stats')
-                        .update({
-                            streak_dates: newDates,
-                            streak: (stats?.streak || 0) + 1
-                        })
-                        .eq('profile_id', profileId);
-                }
 
                 result = { status: 'success', message: 'Logged in' };
                 break;
@@ -151,7 +130,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 const { data: existingUser } = await supabase
                     .from('profiles')
                     .select('id')
-                    .eq('username', lowerUsername)
+                    .ilike('username', data.username)
                     .maybeSingle();
 
                 if (existingUser) {
@@ -175,7 +154,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 const { data: profile, error } = await supabase
                     .from('profiles')
                     .select('*')
-                    .eq('username', data.username)
+                    .ilike('username', data.username)
                     .maybeSingle();
                 
                 if (error || !profile) throw new Error(error?.message || 'User not found');
@@ -204,7 +183,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('id')
-                    .eq('username', data.username)
+                    .ilike('username', data.username)
                     .maybeSingle();
                 
                 if (!profile) throw new Error('User not found');
@@ -396,6 +375,16 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 const nextScore = currentScore + xpGain;
                 const nextLevel = Math.floor(nextScore / 100) + 1;
                 
+                const streakDates = stats?.streak_dates || [];
+                const todayStr = new Date().toISOString().split('T')[0];
+                let newStreak = stats?.streak || 0;
+                let newDates = streakDates;
+                
+                if (w > 0 && !streakDates.includes(todayStr)) {
+                    newDates = [...streakDates, todayStr];
+                    newStreak += 1;
+                }
+                
                 await Promise.all([
                     supabase
                         .from('user_stats')
@@ -403,7 +392,9 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                             profile_id: profileId,
                             xp_score: nextScore,
                             watch_time_seconds: (stats?.watch_time_seconds || 0) + w,
-                            level: nextLevel
+                            level: nextLevel,
+                            streak: newStreak,
+                            streak_dates: newDates
                         }, { onConflict: 'profile_id' }),
                     supabase
                         .from('activity')
@@ -501,6 +492,20 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 timestamp: Date.now(),
                 version: version
             }));
+
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('api-cache-updated', {
+                    detail: { cacheKey, action, data: result }
+                }));
+            }
+        } else {
+            // For mutation actions, dispatch an event so UI can re-fetch
+            const mutationActions = ['updateProfile', 'updateSocials', 'updateProfileXp', 'saveNotes', 'saveRoadmap'];
+            if (mutationActions.includes(action)) {
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('api-data-mutated'));
+                }
+            }
         }
 
         return { ok: true, json: async () => result, status: responseStatus };

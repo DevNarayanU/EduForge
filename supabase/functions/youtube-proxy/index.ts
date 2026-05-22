@@ -2,6 +2,11 @@
 // Supabase Edge Function to proxy and secure YouTube API requests
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY') || '';
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,12 +17,17 @@ const corsHeaders = {
 const getActiveKeys = () => {
   const keys: string[] = [];
   for (let i = 1; i <= 10; i++) {
-    const key = Deno.env.get(`YOUTUBE_API_KEY_${i}`);
-    if (key) keys.push(key);
+    let key = Deno.env.get(`YOUTUBE_API_KEY_${i}`);
+    if (!key) {
+      key = Deno.env.get(`VITE_YOUTUBE_API_KEY_${i}`);
+    }
+    if (key) {
+      keys.push(key);
+    }
   }
   
   // Fallback to generic key
-  const defaultKey = Deno.env.get("YOUTUBE_API_KEY");
+  const defaultKey = Deno.env.get("YOUTUBE_API_KEY") || Deno.env.get("VITE_YOUTUBE_API_KEY");
   if (keys.length === 0 && defaultKey) {
     keys.push(defaultKey);
   }
@@ -41,6 +51,31 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
+    }
+
+    const cacheKey = `${endpoint}_${JSON.stringify(params)}`;
+
+    // 1. Check Server-Side Cache
+    if (supabase) {
+      try {
+        const { data: cached } = await supabase
+          .from('youtube_cache')
+          .select('response_data, created_at')
+          .eq('query_key', cacheKey)
+          .maybeSingle();
+
+        if (cached && cached.response_data) {
+          const ageHours = (new Date().getTime() - new Date(cached.created_at).getTime()) / (1000 * 60 * 60);
+          if (ageHours < 24) { // 24 hour TTL for server shared cache
+            console.log(`[YouTube Proxy] Serving from DB Cache: ${endpoint}`);
+            return new Response(JSON.stringify(cached.response_data), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" }
+            });
+          }
+        }
+      } catch (e: any) {
+        console.warn("[YouTube Proxy] Cache read failed (table might not exist yet):", e.message);
+      }
     }
 
     const activeKeys = getActiveKeys();
@@ -73,26 +108,40 @@ serve(async (req) => {
         if (response.ok) {
           // Success: update key index so future requests use this key first
           currentKeyIndex = keyIndex;
+          
+          // 2. Write to Server-Side Cache (Fire and forget)
+          if (supabase) {
+            supabase.from('youtube_cache').upsert({
+              query_key: cacheKey,
+              response_data: data,
+              created_at: new Date().toISOString()
+            }, { onConflict: 'query_key' }).then(({ error }) => {
+                if (error) console.warn("[YouTube Proxy] Cache write failed:", error.message);
+            });
+          }
+
           return new Response(JSON.stringify(data), {
             headers: { ...corsHeaders, "Content-Type": "application/json" }
           });
         }
 
         const errorObj = data.error?.errors?.[0] || {};
-        const isQuotaError = response.status === 403 && (
-          errorObj.reason === 'quotaExceeded' || 
-          errorObj.reason === 'rateLimitExceeded' || 
-          errorObj.reason === 'dailyLimitExceeded' ||
-          errorObj.domain === 'usageLimits'
-        );
+        const errorMessage = data.error?.message || "";
+        const isKeyError = response.status === 403 || 
+                           response.status === 429 || 
+                           (response.status === 400 && (
+                             errorObj.reason === 'keyInvalid' || 
+                             errorMessage.toLowerCase().includes('key')
+                           )) ||
+                           response.status >= 500;
 
-        if (isQuotaError) {
-          console.warn(`[YouTube Proxy] Key #${keyIndex + 1} quota exceeded. Rotating...`);
+        if (isKeyError) {
+          console.warn(`[YouTube Proxy] Key #${keyIndex + 1} failed (Status: ${response.status}, Reason: ${errorObj.reason || 'None'}). Rotating...`);
           attempts++;
           continue;
         }
 
-        // For other API errors (e.g. bad request, key invalid) return them directly
+        // For other API errors (e.g. bad request parameters) return them directly
         return new Response(JSON.stringify(data), {
           status: response.status,
           headers: { ...corsHeaders, "Content-Type": "application/json" }

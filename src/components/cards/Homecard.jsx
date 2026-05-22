@@ -12,7 +12,7 @@ function Homecard({data , setisplaying , setcurrentVideo}){
                 <div className="card" key={item.id.videoId} onClick={() => selectVideo(item)}>
                      {/* onClick={() => handleclick(item)} */}
 
-                    <img className="image-properties" src={item.snippet.thumbnails.high.url} alt="thumbnail" />
+                    <img className="image-properties" src={item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.high?.url || ''} alt="thumbnail" />
                     <h2 >{item.snippet.title}</h2>
                     <h4>{item.snippet.channelTitle}</h4>
                 </div>

@@ -4,13 +4,10 @@ import { useNavigate } from "react-router-dom";
 const forgeLogo = "/forge.png";
 import searchIcon from "../../assets/search.svg";
 import { FiFileText, FiAward, FiMap } from "react-icons/fi";
-import { fetchYoutube } from "../../services/youtube";
-import { ALLOWED_CHANNELS } from "../../constants";
 import StatusDots from "../status/StatusDots";
 
-export default function Top_panel({ setdata, setisplaying, initialQuery, profileImage }){
+export default function Top_panel({ initialQuery, profileImage }){
     const [input,setinput] = useState(initialQuery||"");
-    const [query,setquery] = useState(initialQuery||"");
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     const navigate = useNavigate();
@@ -20,50 +17,15 @@ export default function Top_panel({ setdata, setisplaying, initialQuery, profile
     }
 
     useEffect(() => {
-        if (initialQuery) {
-            setinput(initialQuery);
-            setquery(initialQuery);
-        }
+        setinput(initialQuery || "");
     }, [initialQuery]);
     
     const handlesubmit = (e) => {
         e.preventDefault();
         if (!input.trim()) return;
-        setquery(input);
+        navigate(`/home?query=${encodeURIComponent(input)}`);
         setIsSearchOpen(false);
     }
-
-    useEffect(()=> {
-        if (!query.trim()) return; 
-
-        async function getData(query){
-            try {
-                const data = await fetchYoutube('search', {
-                    part: "snippet",
-                    q: query,
-                    type: "video",
-                    maxResults: 30
-                });
-                
-                console.log("Raw YouTube data:", data.items);
-                
-                const filtered = (data.items || []).filter(item =>
-                    ALLOWED_CHANNELS.some(ch =>
-                        item.snippet.channelTitle.trim().toLowerCase() === ch.trim().toLowerCase()
-                    )
-                );
-
-                console.log("Filtered data count:", filtered.length);
-                
-                setisplaying(false);
-                setdata(filtered);
-                
-            } catch (err) {
-                console.error("YouTube search error:", err);
-            }
-        }
-        getData(query)
-    },[query, setdata, setisplaying])
 
     return(
         <div className={`top-panel ${isSearchOpen ? 'search-active' : ''}`}>
