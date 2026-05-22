@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Exclude dynamic login/signup routes from crawler search result listings
+Disallow: /login
+Disallow: /signup
+
+Sitemap: https://eduforge.vercel.app/sitemap.xml

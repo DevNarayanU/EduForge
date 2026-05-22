@@ -878,6 +878,10 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
         <footer className="profile-minimal-footer">
           <Link to="/about">About EduForge</Link>
           <span className="separator">•</span>
+          <a href="https://github.com/saharshbaiju/EduForge" target="_blank" rel="noopener noreferrer">
+            GitHub
+          </a>
+          <span className="separator">•</span>
           <Link to="/privacy">Privacy Policy</Link>
           <span className="separator">•</span>
           <Link to="/terms">Terms of Service</Link>

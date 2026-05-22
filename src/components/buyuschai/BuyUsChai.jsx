@@ -32,7 +32,7 @@ export default function BuyUsChai() {
     } else if (app === 'paytm') {
       url = `paytmmp://pay?pa=${upiId}&pn=EduForge&cu=INR`;
     } else if (app === 'bhim') {
-      url = `bhim://pay?pa=${upiId}&pn=EduForge&cu=INR`;
+      url = `upi://pay?pa=${upiId}&pn=EduForge&cu=INR`;
     }
 
     if (app === 'generic' || (!isAndroid && !isIOS)) {

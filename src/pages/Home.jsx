@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./Home.css";
 import { fetchYoutube } from "../services/youtube";
 import { ALLOWED_CHANNELS } from "../constants";
+import { FiGithub } from "react-icons/fi";
 
 
 
@@ -212,6 +213,15 @@ return(
                 )}
             </div>
         )}
+        
+        <a 
+            href="https://github.com/saharshbaiju/EduForge" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="home-github-link"
+        >
+            <FiGithub size={14} /> GitHub
+        </a>
     </>
 )}
 {isplaying === true && <Video video={currentVideo} setisplaying={setisplaying} data={data} setcurrentVideo={setcurrentVideo} user={user} /> }
