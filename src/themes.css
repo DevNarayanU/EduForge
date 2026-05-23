@@ -8,28 +8,29 @@
 body.theme-0 {
   --bg-main: #000000;
   --text-on-main: #ffffff;
-  --bg-surface: rgba(0, 0, 0, 0.41);
+  --bg-surface: rgba(255, 255, 255, 0.015);
   --bg-surface-solid: #000000;
-  --bg-surface-hover: rgba(0, 0, 0, 0.6);
+  --bg-surface-hover: rgba(255, 255, 255, 0.035);
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-muted: rgba(255, 255, 255, 0.4);
-  --accent-primary: #0089f9;
-  --accent-secondary: #006eff;
-  --border-dim: rgba(255, 255, 255, 0.1);
-  --border-focus: rgba(0, 210, 255, 0.6);
-  --shadow-premium: 0 0 7px rgba(0, 110, 255, 0.8);
-  --glow-accent: rgba(0, 137, 249, 0.15);
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-muted: #64748b;
+  --accent-primary: #6366f1;
+  --accent-secondary: #8b5cf6;
+  --border-dim: rgba(255, 255, 255, 0.05);
+  --border-focus: rgba(99, 102, 241, 0.4);
+  --shadow-premium: 0 0 15px rgba(99, 102, 241, 0.15);
+  --glow-accent: rgba(99, 102, 241, 0.08);
   --glass-bg: rgba(10, 7, 20, 0.102);
-  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border: rgba(255, 255, 255, 0.3);
   --btn-text: #ffffff;
-  --input-bg: #000000;
-  --card-bg-glow: radial-gradient(circle at top right, rgba(0, 110, 255, 0.06), transparent);
+  --input-bg: rgba(0, 0, 0, 0.2);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(99, 102, 241, 0.06), transparent);
   --font-family-display: "Urbanist", sans-serif;
   --font-family-mono: "Trispace", sans-serif;
-  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
   --scrollbar-track: transparent;
   --logo-filter: none;
+  --bg-glow-orb: #124784;
 }
 
 /* ==========================================================================
@@ -61,7 +62,7 @@ body.theme-1 {
   --font-family-mono: "JetBrains Mono", monospace;
   --scrollbar-thumb: rgba(0, 242, 254, 0.2);
   --scrollbar-track: rgba(0, 0, 0, 0.3);
-  --logo-filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.4));
+  --logo-filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.4));  --bg-glow-orb: rgba(0, 242, 254, 0.15);
 }
 
 /* ==========================================================================
@@ -93,7 +94,7 @@ body.theme-2 {
   --font-family-mono: "Share Tech Mono", monospace;
   --scrollbar-thumb: rgba(0, 255, 102, 0.25);
   --scrollbar-track: rgba(0, 0, 0, 0.4);
-  --logo-filter: hue-rotate(120deg) brightness(1.2) drop-shadow(0 0 5px rgba(0, 255, 102, 0.5));
+  --logo-filter: hue-rotate(120deg) brightness(1.2) drop-shadow(0 0 5px rgba(0, 255, 102, 0.5));  --bg-glow-orb: rgba(0, 255, 102, 0.12);
 }
 
 /* ==========================================================================
@@ -125,7 +126,7 @@ body.theme-3 {
   --font-family-mono: "Trispace", sans-serif;
   --scrollbar-thumb: rgba(0, 113, 227, 0.2);
   --scrollbar-track: rgba(0, 0, 0, 0.03);
-  --logo-filter: invert(1) brightness(0.2) sepia(1) hue-rotate(190deg) saturate(3);
+  --logo-filter: invert(1) brightness(0.2) sepia(1) hue-rotate(190deg) saturate(3);  --bg-glow-orb: rgba(0, 113, 227, 0.08);
 }
 
 /* ==========================================================================
@@ -157,7 +158,7 @@ body.theme-4 {
   --font-family-mono: "JetBrains Mono", monospace;
   --scrollbar-thumb: rgba(168, 85, 247, 0.25);
   --scrollbar-track: rgba(0, 0, 0, 0.4);
-  --logo-filter: hue-rotate(270deg) brightness(1.2) drop-shadow(0 0 4px rgba(217, 70, 239, 0.4));
+  --logo-filter: hue-rotate(270deg) brightness(1.2) drop-shadow(0 0 4px rgba(217, 70, 239, 0.4));  --bg-glow-orb: rgba(168, 85, 247, 0.15);
 }
 
 /* ==========================================================================
@@ -189,7 +190,7 @@ body.theme-5 {
   --font-family-mono: "Trispace", sans-serif;
   --scrollbar-thumb: rgba(212, 175, 55, 0.2);
   --scrollbar-track: rgba(0, 0, 0, 0.3);
-  --logo-filter: sepia(1) saturate(2) hue-rotate(5deg) brightness(1.1) drop-shadow(0 0 4px rgba(212, 175, 55, 0.3));
+  --logo-filter: sepia(1) saturate(2) hue-rotate(5deg) brightness(1.1) drop-shadow(0 0 4px rgba(212, 175, 55, 0.3));  --bg-glow-orb: rgba(212, 175, 55, 0.08);
 }
 
 /* ==========================================================================
@@ -221,7 +222,7 @@ body.theme-6 {
   --font-family-mono: "Trispace", sans-serif;
   --scrollbar-thumb: rgba(0, 180, 216, 0.2);
   --scrollbar-track: rgba(0, 0, 0, 0.3);
-  --logo-filter: hue-rotate(185deg) saturate(1.8) drop-shadow(0 0 4px rgba(0, 180, 216, 0.4));
+  --logo-filter: hue-rotate(185deg) saturate(1.8) drop-shadow(0 0 4px rgba(0, 180, 216, 0.4));  --bg-glow-orb: rgba(0, 180, 216, 0.15);
 }
 
 /* ==========================================================================
@@ -253,7 +254,7 @@ body.theme-7 {
   --font-family-mono: "JetBrains Mono", monospace;
   --scrollbar-thumb: rgba(255, 0, 60, 0.25);
   --scrollbar-track: rgba(0, 0, 0, 0.4);
-  --logo-filter: hue-rotate(340deg) saturate(2.5) drop-shadow(0 0 4px rgba(255, 0, 60, 0.4));
+  --logo-filter: hue-rotate(340deg) saturate(2.5) drop-shadow(0 0 4px rgba(255, 0, 60, 0.4));  --bg-glow-orb: rgba(255, 0, 60, 0.1);
 }
 
 /* ==========================================================================
@@ -285,7 +286,7 @@ body.theme-8 {
   --font-family-mono: "VT323", monospace;
   --scrollbar-thumb: rgba(255, 0, 127, 0.25);
   --scrollbar-track: rgba(0, 0, 0, 0.3);
-  --logo-filter: hue-rotate(290deg) saturate(1.8) drop-shadow(0 0 4px rgba(255, 0, 127, 0.4));
+  --logo-filter: hue-rotate(290deg) saturate(1.8) drop-shadow(0 0 4px rgba(255, 0, 127, 0.4));  --bg-glow-orb: rgba(255, 0, 127, 0.15);
 }
 
 /* ==========================================================================
@@ -317,7 +318,7 @@ body.theme-9 {
   --font-family-mono: "Lora", serif;
   --scrollbar-thumb: rgba(184, 144, 71, 0.3);
   --scrollbar-track: rgba(0, 0, 0, 0.05);
-  --logo-filter: sepia(1) saturate(1.5) hue-rotate(60deg) brightness(0.9) contrast(1.1);
+  --logo-filter: sepia(1) saturate(1.5) hue-rotate(60deg) brightness(0.9) contrast(1.1);  --bg-glow-orb: rgba(184, 144, 71, 0.08);
 }
 
 /* ==========================================================================
@@ -349,5 +350,5 @@ body.theme-10 {
   --font-family-mono: "Trispace", sans-serif;
   --scrollbar-thumb: #333333;
   --scrollbar-track: #000000;
-  --logo-filter: grayscale(1) brightness(2);
+  --logo-filter: grayscale(1) brightness(2);  --bg-glow-orb: transparent;
 }

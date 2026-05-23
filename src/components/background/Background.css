@@ -1,7 +1,7 @@
 .background {
   position: fixed;
   inset:0px;
-  background: #000000;
+  background: var(--bg-main);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -9,13 +9,12 @@
   align-items: center;
   justify-content: center;
   z-index: -20;
-
 }
 
 .blue {
     height:600px;
     width:600px;
-    background:#124784;
+    background: var(--bg-glow-orb);
     border-radius: 50%;
     position: relative;
     margin-bottom: 20vh;

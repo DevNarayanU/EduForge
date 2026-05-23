@@ -44,7 +44,7 @@ body{
     text-shadow: 0 0 px ;
     margin:0px;
     letter-spacing: 2px;
-    color: white;
+    color: var(--text-primary);
     font-family: "Tourney", sans-serif;
     font-size: clamp(70px, 8vw, 100px);
     font-weight: 500;
@@ -54,7 +54,7 @@ body{
 }
 
 .caption{
-    color:white;
+    color: var(--text-primary);
     margin: 10px 0px 20px;
     font-family: "Urbanist", sans-serif;
     font-optical-sizing: auto;
@@ -78,22 +78,22 @@ body{
 
 .front-search {
     box-sizing: border-box;
-    color: #fff;
-    background-color: rgba(0, 0, 0, 0.396);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--text-primary);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-dim);
     border-radius: 25px;
     width: 100%;
     height: 50px;
     margin:0;
     padding: 0 55px 0 25px;
-    font-family: "Trispace", sans-serif;
+    font-family: var(--font-family-mono);
     font-size: 15px;
     transition: all 0.3s ease;
 }
 
 .front-search:focus {
     outline: none;
-    box-shadow: 0 0 15px rgba(0, 137, 249, 0.69);
+    box-shadow: 0 0 15px var(--border-focus);
 }
 
 .front-search::-webkit-search-cancel-button {
@@ -136,7 +136,7 @@ body{
     font-weight: 300;
     font-size: clamp(9px,2vw,15px);
     font-style: normal;
-    color:white;
+    color: var(--text-primary);
     border-radius:25px;
     display: flex;
     justify-content: center;
@@ -153,14 +153,14 @@ body{
     height: 107%;
     width:102%;
     border-radius: 1000px;
-    background-image:linear-gradient(to bottom right, #008cff, #e100ff);
+    background-image: linear-gradient(to bottom right, var(--accent-primary), var(--accent-secondary));
     z-index:-1;
 }
 
 .login-signup:hover{
     z-index:0;
     font-weight: 400;
-    box-shadow: 50px 0 90px #008cff,-30px 0 100px #e100ff;
+    box-shadow: 50px 0 90px var(--accent-primary),-30px 0 100px var(--accent-secondary);
 }
 
 .profile-image{
@@ -171,7 +171,7 @@ body{
   top:10px;
   right: 20px;
   object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--border-dim);
   transition: transform 0.2s;
 }
 
@@ -193,28 +193,28 @@ body{
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
   backdrop-filter: blur(10px);
   padding: 8px 16px;
   border-radius: 20px;
-  color: white;
+  color: var(--text-primary);
   text-decoration: none;
-  font-family: "Trispace", sans-serif;
+  font-family: var(--font-family-mono);
   font-size: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-dim);
   transition: all 0.3s ease;
 }
 
 .front-notes-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #0ea5e9;
-  box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
+  background: var(--bg-surface-hover);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px var(--border-focus);
   transform: translateY(-2px);
 }
 
 .leaderboard-link:hover {
-  border-color: #ffd700;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px var(--border-focus);
 }
 
 .front-top-actions .profile-image {
@@ -319,7 +319,7 @@ body{
   overflow: hidden;
   position: relative;
   border-radius: 14px;
-  background-color: rgba(10, 7, 20, 0.102);
+  background-color: var(--glass-bg);
 
   height: 500px;
   width: 430px;
@@ -337,7 +337,7 @@ body{
 }
 
 .login-container h1 {
-  color: white;
+  color: var(--text-primary);
   font-family: Urbanist;
   font-weight: 300;
 }
@@ -345,14 +345,14 @@ body{
 .login-container a {
   all: unset;
   text-decoration: underline;
-  color: white;
+  color: var(--text-primary);
   font-family: Urbanist;
   font-weight: 300;
   cursor: pointer;
 }
 
 .login-container p {
-  color: white;
+  color: var(--text-primary);
   font-family: Urbanist;
   font-weight: 300;
 }
@@ -364,7 +364,7 @@ body{
 }
 
 .login-container label {
-  color: white;
+  color: var(--text-primary);
   font-family: Urbanist;
   margin: 10px 0;
   font-size: 18px;
@@ -374,7 +374,7 @@ body{
   all: unset;
 
   background-color: rgb(0, 0, 0);
-  color: white;
+  color: var(--text-primary);
 
   height: 50px;
 
@@ -385,7 +385,7 @@ body{
   font-family: Urbanist;
   font-size: 17px;
 
-  border: 1px solid rgba(255, 255, 255, 0.376);
+  border: 1px solid var(--glass-border);
 }
 
 .login-container button {
@@ -438,7 +438,7 @@ body{
 
   border-radius: 14px;
 
-  background-color: rgba(10, 7, 20, 0.102);
+  background-color: var(--glass-bg);
 
   height: 610px;
   width: 430px;
@@ -463,7 +463,7 @@ body{
 .signup-container h1,
 .signup-container p,
 .signup-container a {
-  color: white;
+  color: var(--text-primary);
   font-family: Urbanist;
   font-weight: 300;
 }
@@ -475,7 +475,7 @@ body{
 }
 
 .signup-container label {
-  color: white;
+  color: var(--text-primary);
   margin: 10px 0;
   font-size: 18px;
   font-family: Urbanist;
@@ -486,7 +486,7 @@ body{
 
   background: black;
 
-  color: white;
+  color: var(--text-primary);
 
   height: 50px;
 
@@ -498,7 +498,7 @@ body{
 
   font-size: 17px;
 
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid var(--glass-border);
 }
 
 .signup-terms-checkbox {
@@ -513,19 +513,19 @@ body{
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #008cff;
+  accent-color: var(--accent-primary);
 }
 
 .signup-terms-checkbox label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   margin: 0;
   cursor: pointer;
   font-family: Urbanist;
 }
 
 .signup-terms-checkbox label a {
-  color: #008cff;
+  color: var(--accent-primary);
   text-decoration: underline;
   font-weight: 500;
   background: none;
@@ -661,11 +661,11 @@ body{
 
 /* ================= GLOBAL SKELETON LOADERS ================= */
 .skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.015) 25%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.015) 75%);
+  background: linear-gradient(90deg, var(--bg-surface) 25%, var(--bg-surface-hover) 50%, var(--bg-surface) 75%);
   background-size: 200% 100%;
   animation: skeletonPulse 1.6s infinite ease-in-out;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-dim);
 }
 
 @keyframes skeletonPulse {

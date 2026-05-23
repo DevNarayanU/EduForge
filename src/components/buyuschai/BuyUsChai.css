@@ -6,7 +6,7 @@
   height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #fff;
+  color: var(--text-primary);
   border: none;
   box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
   display: flex;
@@ -37,7 +37,7 @@
 
 .chai-modal-content {
   background: #11131c;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--bg-surface-hover);
   border-radius: 24px;
   padding: 32px;
   max-width: 360px;
@@ -54,7 +54,7 @@
   right: 16px;
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 8px;
   border-radius: 50%;
@@ -65,8 +65,8 @@
 }
 
 .chai-modal-close:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 .chai-modal-header {
@@ -90,19 +90,19 @@
   font-family: "Urbanist", sans-serif;
   font-size: 1.6rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .chai-note {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0 0 24px;
 }
 
 .chai-qr-container {
-  background: #fff;
+  background: var(--text-primary);
   padding: 12px;
   border-radius: 16px;
   display: inline-block;
@@ -121,15 +121,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed rgba(255, 255, 255, 0.15);
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-dim);
   padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 12px;
 }
 
 .chai-upi-box span {
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-family: monospace;
   font-size: 0.95rem;
   letter-spacing: 0.5px;
@@ -138,7 +138,7 @@
 .chai-copy-btn {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
@@ -149,13 +149,13 @@
 }
 
 .chai-copy-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--border-dim);
+  color: var(--text-primary);
 }
 
 .chai-footer-note {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -179,7 +179,7 @@
 
 .chai-mobile-title {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   margin: 0 0 14px 0;
   font-weight: 600;
   letter-spacing: 0.8px;
@@ -203,9 +203,9 @@
   font-family: "Urbanist", "Inter", -apple-system, sans-serif;
   font-weight: 600;
   font-size: 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
-  color: #e2e8f0;
+  border: 1px solid var(--bg-surface-hover);
+  background: var(--bg-surface);
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
@@ -269,7 +269,7 @@
 .chai-pay-btn.generic-upi {
   width: 100%;
   background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #ffffff;
+  color: var(--text-primary);
   border: none;
   font-size: 0.85rem;
   font-weight: 700;

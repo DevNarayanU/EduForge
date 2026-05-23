@@ -64,7 +64,7 @@
 .home-search {
     width: 100%;
     padding: 0 40px 0 15px;
-    color: white;
+    color: var(--text-primary);
     background-color: rgba(0, 0, 0, 0.398);
     font-family: "Trispace", sans-serif;
     font-size: 14px;
@@ -95,7 +95,7 @@
     background-color: rgba(25, 10, 10, 0.55);
     border-color: rgba(239, 68, 68, 0.35);
     box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-muted);
 }
 
 .home-search:disabled::placeholder {
@@ -175,7 +175,7 @@
     flex-shrink: 0;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s, width 0.3s, height 0.3s;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-dim);
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -197,7 +197,7 @@
 .top-panel-notes-btn {
     background: none;
     border: none;
-    color: white;
+    color: var(--text-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -205,8 +205,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-dim);
     transition: all 0.3s ease;
 }
 
@@ -218,7 +218,7 @@
 }
 
 .top-panel-notes-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--border-dim);
     border-color: #0ea5e9;
     box-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
     transform: scale(1.05);
@@ -227,7 +227,7 @@
 .top-panel-leaderboard-btn {
     background: none;
     border: none;
-    color: white;
+    color: var(--text-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -235,8 +235,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-dim);
     transition: all 0.3s ease;
 }
 
@@ -248,7 +248,7 @@
 }
 
 .top-panel-leaderboard-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--border-dim);
     border-color: #ffd700;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
     transform: scale(1.05);
@@ -257,7 +257,7 @@
 .top-panel-roadmap-btn {
     background: none;
     border: none;
-    color: white;
+    color: var(--text-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -265,8 +265,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-dim);
     transition: all 0.3s ease;
 }
 
@@ -278,9 +278,9 @@
 }
 
 .top-panel-roadmap-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: #6366f1;
-    box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    background-color: var(--border-dim);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px var(--border-focus);
     transform: scale(1.05);
 }
 
@@ -292,7 +292,7 @@
     padding: 6px;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--text-primary);
 }
 
 .mobile-search-toggle img {

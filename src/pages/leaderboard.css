@@ -3,7 +3,7 @@
 .leaderboard-page {
     min-height: 100vh;
     padding: 2.5rem 1.5rem;
-    color: #fff;
+    color: var(--text-primary);
     font-family: 'Urbanist', system-ui, -apple-system, sans-serif;
     position: relative;
     z-index: 1;
@@ -15,12 +15,12 @@
 }
 
 .leaderboard-back-btn {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-dim);
     color: #cbd5e1;
     padding: 0.6rem 1.2rem;
     border-radius: 12px;
-    font-family: 'Trispace', sans-serif;
+    font-family: var(--font-family-mono);
     font-size: 0.9rem;
     font-weight: 600;
     display: inline-flex;
@@ -31,9 +31,9 @@
 }
 
 .leaderboard-back-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(99, 102, 241, 0.3);
-    color: #ffffff;
+    background: var(--bg-surface-hover);
+    border-color: var(--border-focus);
+    color: var(--text-primary);
     transform: translateX(-3px);
 }
 
@@ -48,14 +48,14 @@
     margin: 0;
     font-family: "Urbanist", sans-serif;
     font-weight: 800;
-    background: linear-gradient(135deg, #ffffff 0%, #a5f3fc 50%, #6366f1 100%);
+    background: linear-gradient(135deg, var(--text-primary) 0%, #a5f3fc 50%, var(--accent-primary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: -0.5px;
 }
 
 .leaderboard-header p {
-    color: #94a3b8;
+    color: var(--text-secondary);
     margin-top: 0.75rem;
     font-size: 1.1rem;
     font-weight: 400;
@@ -77,9 +77,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-surface);
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-dim);
     border-radius: 24px;
     padding: 2.5rem 1.5rem 1.75rem;
     text-align: center;
@@ -119,9 +119,9 @@
 /* Hover effects with distinct glowing border and scaling height */
 .podium-item:hover {
     transform: translateY(-8px) scale(1.03);
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(99, 102, 241, 0.25);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.1);
+    background: var(--bg-surface-hover);
+    border-color: var(--border-focus);
+    box-shadow: var(--shadow-premium);
 }
 
 .rank-1:hover {
@@ -154,7 +154,7 @@
     height: 90px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid rgba(255, 255, 255, 0.1);
+    border: 3px solid var(--border-dim);
     transition: all 0.3s ease;
 }
 
@@ -200,20 +200,20 @@
 }
 
 .rank-2 .podium-rank-badge {
-    background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
     color: #0f172a;
 }
 
 .rank-3 .podium-rank-badge {
     background: linear-gradient(135deg, #fed7aa, #b45309);
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .podium-name {
     font-weight: 700;
     font-size: 1.1rem;
     margin-bottom: 0.35rem;
-    color: #f1f5f9;
+    color: var(--text-primary);
     letter-spacing: -0.2px;
 }
 
@@ -249,9 +249,9 @@
     grid-template-columns: 60px 1fr 140px 100px;
     align-items: center;
     padding: 1rem 1.75rem;
-    background: rgba(255, 255, 255, 0.015);
+    background: var(--bg-surface);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-dim);
     border-left: 3px solid transparent;
     border-radius: 16px;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -259,18 +259,18 @@
 }
 
 .leaderboard-row:hover {
-    background: rgba(255, 255, 255, 0.035);
-    border-color: rgba(99, 102, 241, 0.2);
-    border-left-color: #6366f1;
+    background: var(--bg-surface-hover);
+    border-color: var(--border-focus);
+    border-left-color: var(--accent-primary);
     transform: translateX(4px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .row-rank {
     font-weight: 800;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 1rem;
-    font-family: 'Trispace', sans-serif;
+    font-family: var(--font-family-mono);
 }
 
 .row-user {
@@ -284,20 +284,20 @@
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border: 1.5px solid var(--border-dim);
 }
 
 .row-info h3 {
     margin: 0;
     font-size: 1.05rem;
     font-weight: 600;
-    color: #f1f5f9;
+    color: var(--text-primary);
 }
 
 .row-info p {
     margin: 0.15rem 0 0;
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 .row-xp {
@@ -305,31 +305,31 @@
     align-items: center;
     justify-content: flex-end;
     font-weight: 700;
-    color: #6366f1;
-    font-family: 'Trispace', sans-serif;
+    color: var(--accent-primary);
+    font-family: var(--font-family-mono);
     font-size: 0.9rem;
-    background: rgba(99, 102, 241, 0.08);
+    background: var(--glow-accent);
     padding: 0.35rem 0.75rem;
     border-radius: 20px;
-    border: 1px solid rgba(99, 102, 241, 0.15);
+    border: 1px solid var(--border-dim);
     width: fit-content;
     justify-self: end;
 }
 
 .row-xp svg {
-    color: #8b5cf6;
+    color: var(--accent-secondary);
 }
 
 .row-level {
     text-align: right;
     font-weight: 600;
-    color: #94a3b8;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-dim);
     padding: 0.35rem 0.75rem;
     border-radius: 10px;
     font-size: 0.85rem;
-    font-family: 'Trispace', sans-serif;
+    font-family: var(--font-family-mono);
     width: fit-content;
     justify-self: end;
 }
@@ -403,11 +403,11 @@
 /* ================= SKELETON LOADERS ================= */
 
 .skeleton {
-    background: linear-gradient(90deg, rgba(255,255,255,0.015) 25%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.015) 75%);
+    background: linear-gradient(90deg, var(--bg-surface) 25%, var(--bg-surface-hover) 50%, var(--bg-surface) 75%);
     background-size: 200% 100%;
     animation: skeletonPulse 1.6s infinite ease-in-out;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--bg-surface);
 }
 
 @keyframes skeletonPulse {
@@ -435,33 +435,33 @@
 .leaderboard-search-wrapper svg {
     position: absolute;
     left: 16px;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 1.1rem;
     transition: color 0.2s;
 }
 
 .leaderboard-search-input {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-surface);
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    color: #fff;
+    border: 1px solid var(--border-dim);
+    color: var(--text-primary);
     padding: 0.75rem 2.75rem 0.75rem 3rem;
     border-radius: 16px;
     width: 100%;
     outline: none;
-    font-family: 'Urbanist', sans-serif;
+    font-family: var(--font-family-display);
     font-size: 1rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .leaderboard-search-input:focus {
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
-    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 4px var(--border-focus);
+    background: var(--bg-surface-hover);
 }
 
 .leaderboard-search-wrapper:focus-within svg {
-    color: #6366f1;
+    color: var(--accent-primary);
 }
 
 .leaderboard-clear-btn {
@@ -469,7 +469,7 @@
     right: 16px;
     background: none;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 1.25rem;
     cursor: pointer;
     display: flex;
@@ -480,24 +480,24 @@
 }
 
 .leaderboard-clear-btn:hover {
-    color: #f1f5f9;
+    color: var(--text-primary);
 }
 
 .leaderboard-no-results {
     text-align: center;
     padding: 4rem 1.5rem;
-    background: rgba(255, 255, 255, 0.015);
+    background: var(--bg-surface);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-dim);
     border-radius: 20px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .leaderboard-no-results h3 {
     margin: 0;
-    color: #f1f5f9;
+    color: var(--text-primary);
     font-size: 1.25rem;
-    font-family: 'Urbanist', sans-serif;
+    font-family: var(--font-family-display);
 }
 
 .leaderboard-no-results p {
