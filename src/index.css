@@ -18,6 +18,16 @@ body{
     position: fixed;
     margin-bottom: 20vh;
     text-align: center;
+    pointer-events: none; /* Allow interaction with 3D canvas behind */
+}
+
+/* Restore interaction for key UI elements */
+.logo,
+.front-form,
+.front-status-container,
+.login-signup,
+.front-top-actions {
+    pointer-events: auto;
 }
 
 .logo{
@@ -682,7 +692,7 @@ body{
   position: fixed;
   inset: 0px;
   z-index: -10;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .hero-container canvas {
