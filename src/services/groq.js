@@ -1,6 +1,7 @@
 /**
  * Service to handle AI-based filtering of search results using the Groq API.
  */
+import { supabase } from './supabaseClient';
 
 /**
  * Classifies a list of candidate videos using Groq's Llama 3.3 model.
@@ -33,8 +34,7 @@ export const filterVideosWithGroq = async (query, videos) => {
 
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
     if (!apiKey) {
-        console.error("[Groq Service] Groq API key is missing. Ensure VITE_GROQ_API_KEY is configured in your .env file.");
-        throw new Error("Groq API key not configured");
+        console.warn("[Groq Service] Client Groq API key is missing. Will try invoking groq-proxy Edge Function.");
     }
 
     // 2. Prepare candidate videos for the prompt (keeping properties minimal to save tokens)
@@ -83,30 +83,55 @@ Example Output:
 Output ONLY the raw JSON object. Do not include markdown or conversation.`;
 
     try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: prompt }
-                ],
-                model: "llama-3.3-70b-versatile",
-                temperature: 0.1,
-                max_tokens: 2000,
-                response_format: { type: "json_object" }
-            })
-        });
+        let data;
+        if (apiKey) {
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: prompt }
+                    ],
+                    model: "llama-3.3-70b-versatile",
+                    temperature: 0.1,
+                    max_tokens: 2000,
+                    response_format: { type: "json_object" }
+                })
+            });
 
-        if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(`Groq API returned status ${response.status}: ${errText}`);
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Groq API returned status ${response.status}: ${errText}`);
+            }
+
+            data = await response.json();
+        } else {
+            console.log("[Groq Service] Client API key missing. Invoking groq-proxy Edge Function...");
+            const { data: proxyData, error: proxyError } = await supabase.functions.invoke('groq-proxy', {
+                body: {
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: prompt }
+                    ],
+                    model: "llama-3.3-70b-versatile",
+                    temperature: 0.1,
+                    max_tokens: 2000,
+                    response_format: { type: "json_object" }
+                }
+            });
+
+            if (proxyError) {
+                throw new Error(`Edge Function groq-proxy invocation failed: ${proxyError.message}`);
+            }
+            if (proxyData && proxyData.error) {
+                throw new Error(`groq-proxy returned error: ${proxyData.error}`);
+            }
+            data = proxyData;
         }
-
-        const data = await response.json();
         const content = data.choices?.[0]?.message?.content;
         if (!content) {
             throw new Error("Empty response from Groq API");
@@ -175,8 +200,7 @@ export const checkQuerySafety = async (query) => {
 
     const apiKey = import.meta.env.VITE_GROQ_API_KEY;
     if (!apiKey) {
-        console.error("[Safety Filter] Groq API key is missing. Safety check bypassed.");
-        return { allow: true, confidence: 100, reason: "Key missing, bypassed", category: "education" };
+        console.warn("[Safety Filter] Client Groq API key is missing. Will try invoking groq-proxy Edge Function.");
     }
 
     const systemPrompt = `You are EduForge Secure Moderation AI.
@@ -385,29 +409,54 @@ Be extremely conservative. If uncertain, reject.`;
     const prompt = `Evaluate the following search query: "${query}"`;
 
     try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: prompt }
-                ],
-                model: "llama-3.3-70b-versatile",
-                temperature: 0.1,
-                max_tokens: 500,
-                response_format: { type: "json_object" }
-            })
-        });
+        let data;
+        if (apiKey) {
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: prompt }
+                    ],
+                    model: "llama-3.3-70b-versatile",
+                    temperature: 0.1,
+                    max_tokens: 500,
+                    response_format: { type: "json_object" }
+                })
+            });
 
-        if (!response.ok) {
-            throw new Error(`Groq API returned status ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`Groq API returned status ${response.status}`);
+            }
+            data = await response.json();
+        } else {
+            console.log("[Safety Filter] Client API key missing. Invoking groq-proxy Edge Function...");
+            const { data: proxyData, error: proxyError } = await supabase.functions.invoke('groq-proxy', {
+                body: {
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: prompt }
+                    ],
+                    model: "llama-3.3-70b-versatile",
+                    temperature: 0.1,
+                    max_tokens: 500,
+                    response_format: { type: "json_object" }
+                }
+            });
+
+            if (proxyError) {
+                throw new Error(`Edge Function groq-proxy safety check failed: ${proxyError.message}`);
+            }
+            if (proxyData && proxyData.error) {
+                throw new Error(`groq-proxy safety check returned error: ${proxyData.error}`);
+            }
+            data = proxyData;
         }
 
-        const data = await response.json();
         const content = data.choices?.[0]?.message?.content;
         const result = JSON.parse(content);
 
