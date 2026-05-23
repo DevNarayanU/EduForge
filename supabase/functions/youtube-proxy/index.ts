@@ -54,6 +54,7 @@ serve(async (req) => {
     }
 
     const cacheKey = `${endpoint}_${JSON.stringify(params)}`;
+    let cachedData: any = null;
 
     // 1. Check Server-Side Cache
     if (supabase) {
@@ -65,6 +66,7 @@ serve(async (req) => {
           .maybeSingle();
 
         if (cached && cached.response_data) {
+          cachedData = cached.response_data;
           const ageHours = (new Date().getTime() - new Date(cached.created_at).getTime()) / (1000 * 60 * 60);
           if (ageHours < 24) { // 24 hour TTL for server shared cache
             console.log(`[YouTube Proxy] Serving from DB Cache: ${endpoint}`);
@@ -152,6 +154,14 @@ serve(async (req) => {
         lastError = err.message || "Network error";
         attempts++;
       }
+    }
+
+    // Server-Side Quota Exhaustion Fallback
+    if (cachedData) {
+      console.log(`[YouTube Proxy] All API keys failed or quota exceeded. Serving expired DB Cache as fallback: ${endpoint}`);
+      return new Response(JSON.stringify(cachedData), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     return new Response(JSON.stringify({ error: `All YouTube API keys failed or quota exceeded. Last error: ${lastError}` }), {

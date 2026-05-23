@@ -476,13 +476,58 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
             }
 
             case 'generateRoadmap': {
-                const { data: functionData, error } = await supabase.functions.invoke('generate-roadmap', {
-                    body: { skill: data.skill }
-                });
-                
-                if (error) throw new Error(error.message);
-                if (functionData?.error) throw new Error(functionData.error);
-                result = functionData;
+                try {
+                    const { data: functionData, error } = await supabase.functions.invoke('generate-roadmap', {
+                        body: { skill: data.skill }
+                    });
+                    
+                    if (error) throw new Error(error.message);
+                    if (functionData?.error) throw new Error(functionData.error);
+                    result = functionData;
+                } catch (apiError) {
+                    console.warn("[API Service] generate-roadmap failed. Checking local cache & DB fallback...", apiError);
+                    
+                    // Fallback 1: LocalStorage cache check (even if expired)
+                    const fallbackCacheKey = `cache_generateRoadmap_${JSON.stringify(data)}`;
+                    try {
+                        const localCached = localStorage.getItem(fallbackCacheKey);
+                        if (localCached) {
+                            const parsed = JSON.parse(localCached);
+                            console.log(`[API Service] Fallback successful! Serving generateRoadmap from local cache.`);
+                            result = parsed.data;
+                            break;
+                        }
+                    } catch (e) {
+                        console.warn("[API Service] Failed to read generateRoadmap local cache", e);
+                    }
+
+                    // Fallback 2: Check if ANY roadmap for this skill exists in Supabase
+                    try {
+                        const { data: dbRoadmap, error: dbError } = await supabase
+                            .from('roadmaps')
+                            .select('nodes, edges, title, skill')
+                            .ilike('skill', data.skill)
+                            .limit(1)
+                            .maybeSingle();
+
+                        if (!dbError && dbRoadmap) {
+                            console.log(`[API Service] Fallback successful! Serving generateRoadmap from existing DB Roadmap for skill: "${data.skill}"`);
+                            result = {
+                                status: "success",
+                                roadmap: {
+                                    nodes: dbRoadmap.nodes,
+                                    edges: dbRoadmap.edges
+                                }
+                            };
+                            break;
+                        }
+                    } catch (dbEx) {
+                        console.warn("[API Service] Failed to query existing roadmaps as fallback", dbEx);
+                    }
+
+                    // If all fallbacks fail, rethrow the original error
+                    throw apiError;
+                }
                 break;
             }
 

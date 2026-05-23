@@ -127,7 +127,17 @@ Output ONLY the raw JSON object. Do not include markdown or conversation.`;
 
         return approvedIds;
     } catch (error) {
-        console.error("[Groq Service] AI filtering failed:", error);
+        console.error("[Groq Service] AI filtering failed. Falling back to expired cache...", error);
+        try {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                console.log(`[Groq Service] Fallback successful! Serving cached AI filtered IDs for query: "${query}"`);
+                return parsed.approvedIds;
+            }
+        } catch (e) {
+            console.error("[Groq Service] Failed to read fallback cache", e);
+        }
         throw error;
     }
 };
@@ -413,7 +423,17 @@ Be extremely conservative. If uncertain, reject.`;
 
         return result;
     } catch (error) {
-        console.error("[Safety Filter] Safety evaluation failed:", error);
+        console.error("[Safety Filter] Safety evaluation failed. Checking fallback cache...", error);
+        try {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                console.log(`[Safety Filter] Fallback successful! Serving cached safety result for: "${query}"`);
+                return parsed.result;
+            }
+        } catch (e) {
+            console.error("[Safety Filter] Failed to read fallback safety cache", e);
+        }
         // Fail-safe: allow search to proceed under standard channel filters if API fails
         return { allow: true, confidence: 50, reason: "Safety check error, bypassed", category: "education" };
     }
