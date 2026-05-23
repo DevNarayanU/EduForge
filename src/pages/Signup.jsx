@@ -23,28 +23,53 @@ function Signup(){
             return;
         }
 
+        if (!username || username.trim() === "") {
+            setError("Username is required.");
+            return;
+        }
+
+        if (username.length < 3) {
+            setError("Username must be at least 3 characters.");
+            return;
+        }
+
+        if (username.length > 20) {
+            setError("Username must be at most 20 characters.");
+            return;
+        }
+
         const usernameRegex = /^[a-z0-9_]+$/;
         if (!usernameRegex.test(username)) {
             setError("Username can only contain lowercase letters, numbers, and underscores (no spaces or capitals).");
             return;
         }
 
-        if (password !== repassword){
+        if (!password) {
+            setError("Password is required.");
+            return;
+        }
+
+        if (password.length < 6) {
+            setError("Password must be at least 6 characters.");
+            return;
+        }
+
+        if (password !== repassword) {
+            setError("Passwords do not match.");
             return;
         }
         
-        try{
-        const res = await fetchApi('signup', { username, password }, 'POST');
-        
-        const data = await res.json();
-        if (res.ok){
-            navigate("/login", { state: { message: "Account created successfully!" } });
-        }else{
-            setError(data.error)
+        try {
+            const res = await fetchApi('signup', { username, password }, 'POST');
+            const data = await res.json();
+            if (res.ok) {
+                navigate("/login", { state: { message: "Account created successfully!" } });
+            } else {
+                setError(data.error || "Signup failed");
+            }
+        } catch {
+            setError("Server connection failed!!!");
         }
-    }catch {
-        setError("Server connection failed!!!");
-    }
     };
 
     const isMatch = password === repassword;

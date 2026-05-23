@@ -151,7 +151,7 @@ BEGIN
   INSERT INTO public.profiles (id, username, display_name, verified)
   VALUES (
     new.id,
-    COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
+    LOWER(COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1))),
     COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
     true
   );

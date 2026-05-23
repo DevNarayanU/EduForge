@@ -21,9 +21,9 @@ function Login({ setuser }) {
             const data = await res.json();
 
             if (res.ok) {
-                setuser(username);
+                setuser(username.toLowerCase());
                 navigate("/" , {state :{ message : "Login Successful!!"}})
-                console.log("SETTING USER:", username);
+                console.log("SETTING USER:", username.toLowerCase());
                 
         
             } else {

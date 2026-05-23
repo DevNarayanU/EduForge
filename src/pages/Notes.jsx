@@ -102,9 +102,20 @@ export default function Notes({ user }) {
             }
         };
 
+        const handleDataMutated = () => {
+            fetchApi('getNotes', { username: user }, 'GET', { useCache: false })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.error) setNotes(data);
+                })
+                .catch(console.error);
+        };
+
         window.addEventListener('api-cache-updated', handleCacheUpdate);
+        window.addEventListener('api-data-mutated', handleDataMutated);
         return () => {
             window.removeEventListener('api-cache-updated', handleCacheUpdate);
+            window.removeEventListener('api-data-mutated', handleDataMutated);
         };
     }, [user]);
 

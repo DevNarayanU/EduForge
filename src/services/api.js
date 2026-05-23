@@ -89,7 +89,7 @@ export const fetchApi = async (action, data = {}, method = 'GET', options = {}) 
     }
 
     const currentVersion = COMPONENT_VERSIONS[options.component || 'app'] || '1.0.0';
-    const requestPromise = performSupabaseRequest(action, data, useCache ? cacheKey : null, currentVersion);
+    const requestPromise = performSupabaseRequest(action, data, method === 'GET' ? cacheKey : null, currentVersion);
     pendingRequests.set(pendingKey, requestPromise);
     
     try {
@@ -126,11 +126,26 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
             }
 
             case 'signup': {
-                const lowerUsername = data.username.toLowerCase();
+                const usernameVal = (data.username || '').trim();
+                if (!usernameVal) {
+                    throw new Error("Username is required");
+                }
+                const usernameRegex = /^[a-z0-9_]+$/;
+                if (!usernameRegex.test(usernameVal)) {
+                    throw new Error("Username can only contain lowercase letters, numbers, and underscores (no spaces or capitals).");
+                }
+                if (usernameVal.length < 3 || usernameVal.length > 20) {
+                    throw new Error("Username must be between 3 and 20 characters");
+                }
+                if (!data.password || data.password.length < 6) {
+                    throw new Error("Password must be at least 6 characters");
+                }
+
+                const lowerUsername = usernameVal.toLowerCase();
                 const { data: existingUser } = await supabase
                     .from('profiles')
                     .select('id')
-                    .ilike('username', data.username)
+                    .ilike('username', lowerUsername)
                     .maybeSingle();
 
                 if (existingUser) {
@@ -142,7 +157,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                     email,
                     password: data.password,
                     options: {
-                        data: { username: data.username }
+                        data: { username: lowerUsername }
                     }
                 });
                 if (error) throw new Error(error.message);
