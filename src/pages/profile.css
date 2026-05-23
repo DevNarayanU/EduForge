@@ -979,3 +979,95 @@
     gap: 8px 12px;
   }
 }
+
+/* ================= PROFILE TAB SEARCH & SCROLL ================= */
+
+.profile-search-container {
+  display: flex;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.profile-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 320px;
+}
+
+.profile-search-wrapper svg {
+  position: absolute;
+  left: 12px;
+  color: #64748b;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.profile-search-input {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #fff;
+  padding: 0.55rem 2.25rem 0.55rem 2.5rem;
+  border-radius: 12px;
+  width: 100%;
+  outline: none;
+  font-family: 'Urbanist', sans-serif;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.profile-search-input:focus {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.profile-search-wrapper:focus-within svg {
+  color: #6366f1;
+}
+
+.profile-clear-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.profile-clear-btn:hover {
+  color: #f1f5f9;
+}
+
+.profile-activity-list-scrollable {
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.profile-activity-list-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.profile-activity-list-scrollable::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: 3px;
+}
+
+.profile-activity-list-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+.profile-activity-list-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.4);
+}

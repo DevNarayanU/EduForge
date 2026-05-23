@@ -7,7 +7,7 @@ const forgeLogo = "/forge.png";
 import { fetchApi, clearApiCache } from "../services/api";
 import { supabase } from "../services/supabaseClient";
 import StatusDots from "../components/status/StatusDots";
-import { FiCopy, FiCheck } from "react-icons/fi";
+import { FiCopy, FiCheck, FiSearch } from "react-icons/fi";
 
 import "./profile.css";
 
@@ -114,6 +114,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [copied, setCopied] = useState(false);
+  const [videoSearchTerm, setVideoSearchTerm] = useState("");
 
   useEffect(() => {
     setActiveTab(isOwnProfile ? "roadmaps" : "notes");
@@ -301,6 +302,15 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
   const recentVideos = stats.panels?.recently_watched || [];
   const recentNotes = stats.panels?.recent_notes || [];
   const savedRoadmaps = stats.panels?.roadmaps || [];
+
+  const filteredVideos = useMemo(() => {
+    return recentVideos.filter((video) => {
+      const title = (video.title || "").toLowerCase();
+      const subtitle = (video.subtitle || "").toLowerCase();
+      const search = videoSearchTerm.toLowerCase();
+      return title.includes(search) || subtitle.includes(search);
+    });
+  }, [recentVideos, videoSearchTerm]);
   const levelThreshold = stats.xp?.level_threshold || 0;
   const xpPercent = levelThreshold > 0 ? Math.min(100, ((stats.xp?.progress || 0) / levelThreshold) * 100) : 0;
 
@@ -803,22 +813,47 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
                             <h2>Recently watched</h2>
                             <p>Videos logged from real watch sessions.</p>
                           </div>
-                          <div className="profile-activity-list">
+
+                          {recentVideos.length > 0 && (
+                            <div className="profile-search-container">
+                              <div className="profile-search-wrapper">
+                                <FiSearch />
+                                <input 
+                                  type="text" 
+                                  placeholder="Search watched videos..." 
+                                  className="profile-search-input"
+                                  value={videoSearchTerm}
+                                  onChange={(e) => setVideoSearchTerm(e.target.value)}
+                                />
+                                {videoSearchTerm && (
+                                  <button className="profile-clear-btn" onClick={() => setVideoSearchTerm("")}>
+                                    &times;
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="profile-activity-list profile-activity-list-scrollable">
                             {recentVideos.length > 0 ? (
-                              recentVideos.map((item) => (
-                                <article 
-                                  key={item.id} 
-                                  className={item.reference_id ? "clickable-item" : ""}
-                                  onClick={() => handleActivityClick(item.reference_id)}
-                                  style={item.reference_id ? { cursor: 'pointer' } : {}}
-                                >
-                                  <div>
-                                    <h3>{item.title}</h3>
-                                    <p>{item.subtitle}</p>
-                                  </div>
-                                  <span>{item.status}</span>
-                                </article>
-                              ))
+                              filteredVideos.length > 0 ? (
+                                filteredVideos.map((item) => (
+                                  <article 
+                                    key={item.id} 
+                                    className={item.reference_id ? "clickable-item" : ""}
+                                    onClick={() => handleActivityClick(item.reference_id)}
+                                    style={item.reference_id ? { cursor: 'pointer' } : {}}
+                                  >
+                                    <div>
+                                      <h3>{item.title}</h3>
+                                      <p>{item.subtitle}</p>
+                                    </div>
+                                    <span>{item.status}</span>
+                                  </article>
+                                ))
+                              ) : (
+                                <EmptyState label="No matching videos found." />
+                              )
                             ) : (
                               <EmptyState label="No videos watched yet." />
                             )}
@@ -845,7 +880,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
                               )}
                             </div>
                           </div>
-                          <div className="profile-activity-list">
+                          <div className="profile-activity-list profile-activity-list-scrollable">
                             {recentNotes.length > 0 ? (
                               recentNotes.map((item) => (
                                 <article 

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiAward, FiArrowLeft, FiUser, FiZap } from "react-icons/fi";
+import { FiAward, FiArrowLeft, FiUser, FiZap, FiSearch } from "react-icons/fi";
 import Background from "../components/background/Background";
 const forgeLogo = "/forge.png";
 import "./leaderboard.css";
@@ -49,6 +49,7 @@ export default function Leaderboard() {
     const navigate = useNavigate();
     const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         const fetchLeaderboard = async () => {
@@ -89,6 +90,16 @@ export default function Leaderboard() {
         navigate(`/profile/${encodeURIComponent(targetUsername)}`);
     };
 
+    const filteredUsers = leaderboard.map((u, index) => ({
+        ...u,
+        originalRank: index + 1
+    })).filter(u => {
+        const username = (u.username || "").toLowerCase();
+        const displayName = (u.display_name || "").toLowerCase();
+        const search = searchTerm.toLowerCase();
+        return username.includes(search) || displayName.includes(search);
+    });
+
     const podiumUsers = leaderboard.slice(0, 3);
     const listUsers = leaderboard.slice(3);
 
@@ -109,6 +120,26 @@ export default function Leaderboard() {
                     <p>The top minds in the EduForge ecosystem</p>
                 </header>
 
+                {!loading && leaderboard.length > 0 && (
+                    <div className="leaderboard-search-container">
+                        <div className="leaderboard-search-wrapper">
+                            <FiSearch />
+                            <input 
+                                type="text" 
+                                placeholder="Search users..." 
+                                className="leaderboard-search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            {searchTerm && (
+                                <button className="leaderboard-clear-btn" onClick={() => setSearchTerm("")}>
+                                    &times;
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {loading ? (
                     <div className="leaderboard-skeleton">
                         <div className="podium-container">
@@ -124,24 +155,46 @@ export default function Leaderboard() {
                     </div>
                 ) : (
                     <>
-                        {podiumUsers.length > 0 && (
-                            <div className="podium-container">
-                                {podiumUsers[1] && <PodiumItem user={podiumUsers[1]} rank={2} onClick={handleUserClick} />}
-                                {podiumUsers[0] && <PodiumItem user={podiumUsers[0]} rank={1} onClick={handleUserClick} />}
-                                {podiumUsers[2] && <PodiumItem user={podiumUsers[2]} rank={3} onClick={handleUserClick} />}
-                            </div>
-                        )}
+                        {searchTerm ? (
+                            filteredUsers.length > 0 ? (
+                                <div className="leaderboard-list">
+                                    {filteredUsers.map((u) => (
+                                        <LeaderboardRow 
+                                            key={u.username} 
+                                            user={u} 
+                                            rank={u.originalRank} 
+                                            onClick={handleUserClick}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="leaderboard-no-results">
+                                    <h3>No users found</h3>
+                                    <p>Try searching with another name or username.</p>
+                                </div>
+                            )
+                        ) : (
+                            <>
+                                {podiumUsers.length > 0 && (
+                                    <div className="podium-container">
+                                        {podiumUsers[1] && <PodiumItem user={podiumUsers[1]} rank={2} onClick={handleUserClick} />}
+                                        {podiumUsers[0] && <PodiumItem user={podiumUsers[0]} rank={1} onClick={handleUserClick} />}
+                                        {podiumUsers[2] && <PodiumItem user={podiumUsers[2]} rank={3} onClick={handleUserClick} />}
+                                    </div>
+                                )}
 
-                        <div className="leaderboard-list">
-                            {listUsers.map((u, index) => (
-                                <LeaderboardRow 
-                                    key={u.username} 
-                                    user={u} 
-                                    rank={index + 4} 
-                                    onClick={handleUserClick}
-                                />
-                            ))}
-                        </div>
+                                <div className="leaderboard-list">
+                                    {listUsers.map((u, index) => (
+                                        <LeaderboardRow 
+                                            key={u.username} 
+                                            user={u} 
+                                            rank={index + 4} 
+                                            onClick={handleUserClick}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </>
                 )}
             </div>
