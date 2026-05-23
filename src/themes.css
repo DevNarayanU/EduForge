@@ -1,0 +1,353 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Share+Tech+Mono&family=JetBrains+Mono:ital,wght@0,300..800;1,300..800&family=VT323&display=swap');
+
+/* ==========================================================================
+   THEME 0: DEFAULT DARK (ORIGINAL STYLE — unchanged from before theme system)
+   Mood: Pure black, cyan-blue glows, near-transparent surfaces
+   Colors: pure black background, rgba card surfaces, cyan-blue accent
+   ========================================================================== */
+body.theme-0 {
+  --bg-main: #000000;
+  --text-on-main: #ffffff;
+  --bg-surface: rgba(0, 0, 0, 0.41);
+  --bg-surface-solid: #000000;
+  --bg-surface-hover: rgba(0, 0, 0, 0.6);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.4);
+  --accent-primary: #0089f9;
+  --accent-secondary: #006eff;
+  --border-dim: rgba(255, 255, 255, 0.1);
+  --border-focus: rgba(0, 210, 255, 0.6);
+  --shadow-premium: 0 0 7px rgba(0, 110, 255, 0.8);
+  --glow-accent: rgba(0, 137, 249, 0.15);
+  --glass-bg: rgba(10, 7, 20, 0.102);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --btn-text: #ffffff;
+  --input-bg: #000000;
+  --card-bg-glow: radial-gradient(circle at top right, rgba(0, 110, 255, 0.06), transparent);
+  --font-family-display: "Urbanist", sans-serif;
+  --font-family-mono: "Trispace", sans-serif;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-track: transparent;
+  --logo-filter: none;
+}
+
+/* ==========================================================================
+   THEME 1: NEON SCHOLAR
+   Mood: futuristic, focused, premium engineering
+   Colors: deep black, electric cyan, neon blue, soft purple glow
+   ========================================================================== */
+body.theme-1 {
+  --bg-main: #020205;
+  --text-on-main: #e0f2fe;
+  --bg-surface: rgba(5, 10, 20, 0.6);
+  --bg-surface-solid: #050a14;
+  --bg-surface-hover: rgba(10, 20, 40, 0.75);
+  --text-primary: #e0f2fe;
+  --text-secondary: #7dd3fc;
+  --text-muted: #38bdf8;
+  --accent-primary: #00f2fe;
+  --accent-secondary: #007cf0;
+  --border-dim: rgba(0, 242, 254, 0.18);
+  --border-focus: rgba(0, 242, 254, 0.7);
+  --shadow-premium: 0 0 25px rgba(0, 242, 254, 0.2), 0 0 10px rgba(138, 43, 226, 0.15);
+  --glow-accent: rgba(0, 242, 254, 0.45);
+  --glass-bg: rgba(2, 2, 5, 0.8);
+  --glass-border: rgba(0, 242, 254, 0.25);
+  --btn-text: #020205;
+  --input-bg: rgba(0, 0, 0, 0.6);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(138, 43, 226, 0.2), transparent);
+  --font-family-display: "Urbanist", sans-serif;
+  --font-family-mono: "JetBrains Mono", monospace;
+  --scrollbar-thumb: rgba(0, 242, 254, 0.2);
+  --scrollbar-track: rgba(0, 0, 0, 0.3);
+  --logo-filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.4));
+}
+
+/* ==========================================================================
+   THEME 2: MIDNIGHT MATRIX
+   Mood: elite hacker, cybersecurity, engineering
+   Colors: matte black, terminal green, emerald glow, subtle lime highlights
+   ========================================================================== */
+body.theme-2 {
+  --bg-main: #040805;
+  --text-on-main: #00ff66;
+  --bg-surface: rgba(8, 15, 10, 0.7);
+  --bg-surface-solid: #08100c;
+  --bg-surface-hover: rgba(12, 25, 16, 0.85);
+  --text-primary: #39ff14;
+  --text-secondary: #00ff66;
+  --text-muted: #a3e635;
+  --accent-primary: #00ff66;
+  --accent-secondary: #059669;
+  --border-dim: rgba(0, 255, 102, 0.2);
+  --border-focus: rgba(0, 255, 102, 0.8);
+  --shadow-premium: 0 0 20px rgba(0, 255, 102, 0.15), inset 0 0 8px rgba(0, 255, 102, 0.05);
+  --glow-accent: rgba(0, 255, 102, 0.4);
+  --glass-bg: rgba(4, 8, 5, 0.85);
+  --glass-border: rgba(0, 255, 102, 0.25);
+  --btn-text: #040805;
+  --input-bg: rgba(0, 0, 0, 0.7);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(0, 255, 102, 0.15), transparent);
+  --font-family-display: "Share Tech Mono", monospace;
+  --font-family-mono: "Share Tech Mono", monospace;
+  --scrollbar-thumb: rgba(0, 255, 102, 0.25);
+  --scrollbar-track: rgba(0, 0, 0, 0.4);
+  --logo-filter: hue-rotate(120deg) brightness(1.2) drop-shadow(0 0 5px rgba(0, 255, 102, 0.5));
+}
+
+/* ==========================================================================
+   THEME 3: FROST GLASS
+   Mood: clean, calming, futuristic (Apple-inspired OS)
+   Colors: icy whites, silver gray, frosted blue, soft transparency
+   ========================================================================== */
+body.theme-3 {
+  --bg-main: #eef2f6;
+  --text-on-main: #1e293b;
+  --bg-surface: rgba(255, 255, 255, 0.5);
+  --bg-surface-solid: #e2e8f0;
+  --bg-surface-hover: rgba(255, 255, 255, 0.75);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --accent-primary: #0071e3;
+  --accent-secondary: #0056b3;
+  --border-dim: rgba(0, 113, 227, 0.15);
+  --border-focus: rgba(0, 113, 227, 0.55);
+  --shadow-premium: 0 10px 30px rgba(0, 113, 227, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --glow-accent: rgba(0, 113, 227, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --btn-text: #ffffff;
+  --input-bg: rgba(255, 255, 255, 0.85);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(0, 113, 227, 0.06), transparent);
+  --font-family-display: "Urbanist", sans-serif;
+  --font-family-mono: "Trispace", sans-serif;
+  --scrollbar-thumb: rgba(0, 113, 227, 0.2);
+  --scrollbar-track: rgba(0, 0, 0, 0.03);
+  --logo-filter: invert(1) brightness(0.2) sepia(1) hue-rotate(190deg) saturate(3);
+}
+
+/* ==========================================================================
+   THEME 4: QUANTUM PURPLE
+   Mood: AI research lab, premium intelligence
+   Colors: deep black, violet, magenta glow, electric purple
+   ========================================================================== */
+body.theme-4 {
+  --bg-main: #05030a;
+  --text-on-main: #f3e8ff;
+  --bg-surface: rgba(18, 10, 36, 0.5);
+  --bg-surface-solid: #150b28;
+  --bg-surface-hover: rgba(28, 16, 56, 0.7);
+  --text-primary: #f3e8ff;
+  --text-secondary: #c084fc;
+  --text-muted: #a855f7;
+  --accent-primary: #d946ef;
+  --accent-secondary: #a855f7;
+  --border-dim: rgba(168, 85, 247, 0.25);
+  --border-focus: rgba(217, 70, 239, 0.75);
+  --shadow-premium: 0 0 25px rgba(168, 85, 247, 0.22);
+  --glow-accent: rgba(168, 85, 247, 0.4);
+  --glass-bg: rgba(5, 3, 10, 0.75);
+  --glass-border: rgba(168, 85, 247, 0.25);
+  --btn-text: #ffffff;
+  --input-bg: rgba(0, 0, 0, 0.5);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(217, 70, 239, 0.16), transparent);
+  --font-family-display: "Urbanist", sans-serif;
+  --font-family-mono: "JetBrains Mono", monospace;
+  --scrollbar-thumb: rgba(168, 85, 247, 0.25);
+  --scrollbar-track: rgba(0, 0, 0, 0.4);
+  --logo-filter: hue-rotate(270deg) brightness(1.2) drop-shadow(0 0 4px rgba(217, 70, 239, 0.4));
+}
+
+/* ==========================================================================
+   THEME 5: SOLAR GOLD
+   Mood: elite scholar, luxury productivity
+   Colors: dark graphite, premium gold accents, warm highlights
+   ========================================================================== */
+body.theme-5 {
+  --bg-main: #121214;
+  --text-on-main: #fafaf9;
+  --bg-surface: rgba(26, 26, 30, 0.55);
+  --bg-surface-solid: #1e1e22;
+  --bg-surface-hover: rgba(38, 38, 44, 0.75);
+  --text-primary: #fafaf9;
+  --text-secondary: #f5f5f4;
+  --text-muted: #d6d3d1;
+  --accent-primary: #d4af37;
+  --accent-secondary: #c5a028;
+  --border-dim: rgba(212, 175, 55, 0.2);
+  --border-focus: rgba(212, 175, 55, 0.8);
+  --shadow-premium: 0 0 20px rgba(212, 175, 55, 0.15);
+  --glow-accent: rgba(212, 175, 55, 0.3);
+  --glass-bg: rgba(18, 18, 20, 0.8);
+  --glass-border: rgba(212, 175, 55, 0.25);
+  --btn-text: #121214;
+  --input-bg: rgba(10, 10, 12, 0.55);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(212, 175, 55, 0.1), transparent);
+  --font-family-display: "Urbanist", sans-serif;
+  --font-family-mono: "Trispace", sans-serif;
+  --scrollbar-thumb: rgba(212, 175, 55, 0.2);
+  --scrollbar-track: rgba(0, 0, 0, 0.3);
+  --logo-filter: sepia(1) saturate(2) hue-rotate(5deg) brightness(1.1) drop-shadow(0 0 4px rgba(212, 175, 55, 0.3));
+}
+
+/* ==========================================================================
+   THEME 6: OCEAN DEEP
+   Mood: focused, calm, intelligent
+   Colors: deep navy, teal, cyan accents
+   ========================================================================== */
+body.theme-6 {
+  --bg-main: #030b16;
+  --text-on-main: #e0f2fe;
+  --bg-surface: rgba(11, 23, 42, 0.55);
+  --bg-surface-solid: #0d1e36;
+  --bg-surface-hover: rgba(20, 38, 66, 0.75);
+  --text-primary: #e0f2fe;
+  --text-secondary: #7dd3fc;
+  --text-muted: #38bdf8;
+  --accent-primary: #00b4d8;
+  --accent-secondary: #0077b6;
+  --border-dim: rgba(0, 180, 216, 0.2);
+  --border-focus: rgba(0, 180, 216, 0.7);
+  --shadow-premium: 0 0 20px rgba(0, 180, 216, 0.15);
+  --glow-accent: rgba(0, 180, 216, 0.3);
+  --glass-bg: rgba(3, 11, 22, 0.85);
+  --glass-border: rgba(0, 180, 216, 0.25);
+  --btn-text: #030b16;
+  --input-bg: rgba(1, 5, 12, 0.6);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(0, 180, 216, 0.12), transparent);
+  --font-family-display: "Urbanist", sans-serif;
+  --font-family-mono: "Trispace", sans-serif;
+  --scrollbar-thumb: rgba(0, 180, 216, 0.2);
+  --scrollbar-track: rgba(0, 0, 0, 0.3);
+  --logo-filter: hue-rotate(185deg) saturate(1.8) drop-shadow(0 0 4px rgba(0, 180, 216, 0.4));
+}
+
+/* ==========================================================================
+   THEME 7: CRIMSON VELOCITY
+   Mood: high-performance, energetic, engineering
+   Colors: black, crimson red, dark scarlet, metallic gray
+   ========================================================================== */
+body.theme-7 {
+  --bg-main: #050507;
+  --text-on-main: #f8fafc;
+  --bg-surface: rgba(20, 20, 24, 0.65);
+  --bg-surface-solid: #16161c;
+  --bg-surface-hover: rgba(28, 28, 36, 0.85);
+  --text-primary: #f8fafc;
+  --text-secondary: #ef4444;
+  --text-muted: #b91c1c;
+  --accent-primary: #ff003c;
+  --accent-secondary: #9b2226;
+  --border-dim: rgba(255, 0, 60, 0.18);
+  --border-focus: rgba(255, 0, 60, 0.8);
+  --shadow-premium: 0 0 25px rgba(255, 0, 60, 0.2);
+  --glow-accent: rgba(255, 0, 60, 0.4);
+  --glass-bg: rgba(5, 5, 7, 0.8);
+  --glass-border: rgba(255, 0, 60, 0.25);
+  --btn-text: #ffffff;
+  --input-bg: rgba(0, 0, 0, 0.65);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(255, 0, 60, 0.12), transparent);
+  --font-family-display: "Urbanist", sans-serif;
+  --font-family-mono: "JetBrains Mono", monospace;
+  --scrollbar-thumb: rgba(255, 0, 60, 0.25);
+  --scrollbar-track: rgba(0, 0, 0, 0.4);
+  --logo-filter: hue-rotate(340deg) saturate(2.5) drop-shadow(0 0 4px rgba(255, 0, 60, 0.4));
+}
+
+/* ==========================================================================
+   THEME 8: RETRO SYNTHWAVE
+   Mood: creative, futuristic nostalgia
+   Colors: purple, neon pink, sunset orange, dark navy
+   ========================================================================== */
+body.theme-8 {
+  --bg-main: #120320;
+  --text-on-main: #ffe4e6;
+  --bg-surface: rgba(30, 8, 50, 0.5);
+  --bg-surface-solid: #220b39;
+  --bg-surface-hover: rgba(45, 14, 75, 0.7);
+  --text-primary: #ffe4e6;
+  --text-secondary: #f472b6;
+  --text-muted: #ec4899;
+  --accent-primary: #ff007f;
+  --accent-secondary: #ff7e5f;
+  --border-dim: rgba(255, 0, 127, 0.25);
+  --border-focus: rgba(255, 126, 95, 0.75);
+  --shadow-premium: 0 0 25px rgba(255, 0, 127, 0.25), 0 0 10px rgba(255, 126, 95, 0.2);
+  --glow-accent: rgba(255, 0, 127, 0.4);
+  --glass-bg: rgba(18, 3, 32, 0.75);
+  --glass-border: rgba(255, 0, 127, 0.25);
+  --btn-text: #ffffff;
+  --input-bg: rgba(5, 1, 10, 0.6);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(255, 126, 95, 0.18), transparent);
+  --font-family-display: "Urbanist", sans-serif;
+  --font-family-mono: "VT323", monospace;
+  --scrollbar-thumb: rgba(255, 0, 127, 0.25);
+  --scrollbar-track: rgba(0, 0, 0, 0.3);
+  --logo-filter: hue-rotate(290deg) saturate(1.8) drop-shadow(0 0 4px rgba(255, 0, 127, 0.4));
+}
+
+/* ==========================================================================
+   THEME 9: FOREST ACADEMIA
+   Mood: intellectual, calm, deep study (university library)
+   Colors: deep forest green, warm parchment beige, muted gold
+   ========================================================================== */
+body.theme-9 {
+  --bg-main: #08120c;
+  --text-on-main: #f5ebd9;
+  --bg-surface: #fbf9f4;
+  --bg-surface-solid: #f3ebd9;
+  --bg-surface-hover: #ece3cf;
+  --text-primary: #112015;
+  --text-secondary: #1a3221;
+  --text-muted: #2f4835;
+  --accent-primary: #b89047;
+  --accent-secondary: #8c6a2e;
+  --border-dim: rgba(184, 144, 71, 0.35);
+  --border-focus: rgba(184, 144, 71, 0.85);
+  --shadow-premium: 0 6px 18px rgba(184, 144, 71, 0.15);
+  --glow-accent: rgba(184, 144, 71, 0.3);
+  --glass-bg: rgba(251, 249, 244, 0.95);
+  --glass-border: rgba(184, 144, 71, 0.3);
+  --btn-text: #08120c;
+  --input-bg: rgba(8, 18, 12, 0.08);
+  --card-bg-glow: radial-gradient(circle at top right, rgba(184, 144, 71, 0.12), transparent);
+  --font-family-display: "Lora", serif;
+  --font-family-mono: "Lora", serif;
+  --scrollbar-thumb: rgba(184, 144, 71, 0.3);
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --logo-filter: sepia(1) saturate(1.5) hue-rotate(60deg) brightness(0.9) contrast(1.1);
+}
+
+/* ==========================================================================
+   THEME 10: MONOCHROME MINIMAL
+   Mood: ultra clean, distraction-free
+   Colors: black, white, charcoal, muted gray
+   ========================================================================== */
+body.theme-10 {
+  --bg-main: #000000;
+  --text-on-main: #ffffff;
+  --bg-surface: #121212;
+  --bg-surface-solid: #161616;
+  --bg-surface-hover: #222222;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #707070;
+  --accent-primary: #ffffff;
+  --accent-secondary: #808080;
+  --border-dim: #2e2e2e;
+  --border-focus: #ffffff;
+  --shadow-premium: none;
+  --glow-accent: none;
+  --glass-bg: #000000;
+  --glass-border: #2e2e2e;
+  --btn-text: #000000;
+  --input-bg: #000000;
+  --card-bg-glow: none;
+  --font-family-display: "Urbanist", sans-serif;
+  --font-family-mono: "Trispace", sans-serif;
+  --scrollbar-thumb: #333333;
+  --scrollbar-track: #000000;
+  --logo-filter: grayscale(1) brightness(2);
+}
