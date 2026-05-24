@@ -6,4 +6,4 @@ Allow: /
 Disallow: /login
 Disallow: /signup
 
-Sitemap: https://eduforge.vercel.app/sitemap.xml
+Sitemap: https://edu-forge-phi.vercel.app/sitemap.xml
