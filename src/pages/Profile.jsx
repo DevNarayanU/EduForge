@@ -89,6 +89,21 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
   const targetUser = urlUsername || user;
   const isOwnProfile = !urlUsername || urlUsername === user;
 
+  const calculateDynamicStreak = (streak, streakDates) => {
+    if (!streakDates || streakDates.length === 0) return 0;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const lastDate = streakDates[streakDates.length - 1];
+    if (lastDate === todayStr || lastDate === yesterdayStr) {
+        return streak || 0;
+    }
+    return 0;
+  };
+
   const [profile, setProfile] = useState(EMPTY_PROFILE);
   const [socials, setSocials] = useState(EMPTY_SOCIALS);
   const [stats, setStats] = useState(EMPTY_STATS);
@@ -696,7 +711,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
                       </div>
                       <div>
                         <span>Streak</span>
-                        <strong>{stats.streak || 0}</strong>
+                        <strong>{calculateDynamicStreak(stats.streak, stats.streak_dates)}</strong>
                         <small>days</small>
                       </div>
                       <div>

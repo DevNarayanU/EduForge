@@ -40,6 +40,24 @@ async function getProfileId(username) {
 }
 
 /**
+ * Calculates current streak dynamically, resetting to 0 if continuity is broken.
+ */
+function calculateCurrentStreak(streak, streakDates) {
+    if (!streakDates || streakDates.length === 0) return 0;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const lastDate = streakDates[streakDates.length - 1];
+    if (lastDate === todayStr || lastDate === yesterdayStr) {
+        return streak || 0;
+    }
+    return 0; // Continuity broken
+}
+
+/**
  * Standardized API fetcher with Caching, Queuing, and Supabase client logic.
  */
 export const fetchApi = async (action, data = {}, method = 'GET', options = {}) => {
@@ -229,7 +247,7 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                         next_level_at: level * 100,
                         watch_time_seconds: stats?.watch_time_seconds || 0
                     },
-                    streak: stats?.streak || 0,
+                    streak: calculateCurrentStreak(stats?.streak, stats?.streak_dates),
                     panels: {
                         recently_watched: activity.map(a => ({
                             id: a.id,
@@ -312,8 +330,9 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
             case 'getLeaderboard': {
                 const { data: leaderboard, error } = await supabase
                     .from('user_stats')
-                    .select('xp_score, level, profiles(username, display_name, profile_image_url, role_title)')
-                    .order('xp_score', { ascending: false });
+                    .select('xp_score, watch_time_seconds, level, profiles(username, display_name, profile_image_url, role_title)')
+                    .order('xp_score', { ascending: false })
+                    .order('watch_time_seconds', { ascending: false });
                 
                 if (error) throw new Error(error.message);
                 result = leaderboard.map(item => ({
@@ -376,23 +395,29 @@ async function performSupabaseRequest(action, data, cacheKey, version = '1.0.0')
                 
                 const w = data.watch_time_seconds || 0;
                 const currentScore = stats?.xp_score || 0;
-                const streakCount = stats?.streak || 1;
+                
+                const streakDates = stats?.streak_dates || [];
+                const currentValidStreak = calculateCurrentStreak(stats?.streak, streakDates);
+                const streakCount = currentValidStreak === 0 ? 1 : currentValidStreak;
                 const x1 = Math.floor(Math.random() * 60);
                 
                 let multiplier = (Math.min(streakCount - 1, 16) * 1.05);
                 if (multiplier < 1) multiplier = 1;
                 
-                const sigmoidTerm = 1 / (1 + Math.exp((Math.floor(currentScore / 3600)) * (currentScore - 15)));
-                const decayFactor = Math.min(sigmoidTerm, 1);
+                const currentLevel = Math.floor(currentScore / 100) + 1;
+                // Soft cap: XP gain decays by 2% per level, but never goes below 10%
+                const decayFactor = Math.max(0.1, 1 - (currentLevel * 0.02));
                 const bonusTerm = (Math.floor(w / 1800) >= 1 ? 1 : 0) * x1;
-                const xpGain = Math.max(0, Math.floor((w * 0.02) * multiplier * decayFactor + bonusTerm));
+                
+                // Probabilistic rounding to perfectly preserve fractional XP across small increments
+                const fractionalXp = (w * 0.02) * multiplier * decayFactor + bonusTerm;
+                const xpGain = Math.floor(fractionalXp) + (Math.random() < (fractionalXp % 1) ? 1 : 0);
                 
                 const nextScore = currentScore + xpGain;
                 const nextLevel = Math.floor(nextScore / 100) + 1;
                 
-                const streakDates = stats?.streak_dates || [];
                 const todayStr = new Date().toISOString().split('T')[0];
-                let newStreak = stats?.streak || 0;
+                let newStreak = currentValidStreak;
                 let newDates = streakDates;
                 
                 if (w > 0 && !streakDates.includes(todayStr)) {
