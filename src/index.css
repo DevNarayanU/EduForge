@@ -321,11 +321,12 @@ body{
   border-radius: 14px;
   background-color: var(--glass-bg);
 
-  height: 500px;
+  height: auto;
+  min-height: 500px;
   width: 430px;
 
   margin: auto;
-  padding: 20px;
+  padding: 20px 20px 30px 20px;
 
   box-sizing: border-box;
 
@@ -440,12 +441,13 @@ body{
 
   background-color: var(--glass-bg);
 
-  height: 610px;
+  height: auto;
+  min-height: 610px;
   width: 430px;
 
   margin: auto;
 
-  padding: 20px;
+  padding: 20px 20px 30px 20px;
 
   box-sizing: border-box;
 
@@ -671,4 +673,78 @@ body{
 @keyframes skeletonPulse {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* ================= GOOGLE OAUTH ================= */
+.google-oauth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: 50px;
+  margin-top: 15px;
+  background-color: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  border-radius: 35px;
+  font-family: Urbanist;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.google-oauth-btn:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.google-oauth-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.google-oauth-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.google-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 25px 0 15px 0;
+  color: var(--text-secondary);
+  font-family: Urbanist;
+  font-size: 14px;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.oauth-divider:not(:empty)::before {
+  margin-right: 15px;
+}
+
+.oauth-divider:not(:empty)::after {
+  margin-left: 15px;
 }

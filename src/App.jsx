@@ -13,6 +13,7 @@ import Contact from "./pages/info/Contact";
 import Terms from "./pages/info/Terms";
 import BuyUsChai from "./components/buyuschai/BuyUsChai";
 import ThemeSelector from "./components/theme-selector/ThemeSelector";
+import AuthCallback from "./pages/AuthCallback";
 import { useState,useEffect } from "react";
 import { fetchApi } from "./services/api";
 import { supabase } from "./services/supabaseClient";
@@ -27,25 +28,42 @@ function App() {
   const [input, setinput] = useState("");
 
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const username = session.user.user_metadata?.username || session.user.email?.split('@')[0];
-        if (username) {
-          setuser(username);
+    const resolveUsername = async (session) => {
+      if (!session?.user) return "";
+      let username = session.user.user_metadata?.username;
+      if (!username) {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("id", session.user.id)
+            .maybeSingle();
+          if (data?.username) {
+            username = data.username;
+          }
+        } catch (e) {
+          console.warn("Failed to fetch username in App.jsx", e);
         }
+      }
+      return username || session.user.email?.split("@")[0] || "";
+    };
+
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const username = await resolveUsername(session);
+        setuser(username);
       } else {
         setuser("");
       }
-    });
+    };
+    checkSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        const username = session.user.user_metadata?.username || session.user.email?.split('@')[0];
-        if (username) {
-          setuser(username);
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        const username = await resolveUsername(session);
+        setuser(username);
       } else {
         setuser("");
       }
@@ -93,6 +111,7 @@ function App() {
       <Route path="/notes/:owner/:videoId" element={<NoteDetails user={user} profileImage={profileImage}/>}/>
       <Route path="/leaderboard" element={<Leaderboard user={user} profileImage={profileImage}/>}/>
       <Route path="/roadmap" element={<Roadmap user={user} profileImage={profileImage}/>}/>
+      <Route path="/auth/callback" element={<AuthCallback setuser={setuser} />} />
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/terms" element={<Terms />} />

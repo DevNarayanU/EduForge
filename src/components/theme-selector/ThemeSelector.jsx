@@ -21,6 +21,12 @@ export default function ThemeSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTheme, setActiveTheme] = useState(0);
 
+  const applyThemeClass = (id) => {
+    const classes = document.body.className.split(' ').filter(c => !c.startsWith('theme-'));
+    classes.push(`theme-${id}`);
+    document.body.className = classes.join(' ').trim();
+  };
+
   useEffect(() => {
     // Read theme from localStorage on initial render
     const savedTheme = localStorage.getItem("eduforge-theme") || "theme-0";
@@ -33,12 +39,6 @@ export default function ThemeSelector() {
       applyThemeClass(0);
     }
   }, []);
-
-  const applyThemeClass = (id) => {
-    const classes = document.body.className.split(' ').filter(c => !c.startsWith('theme-'));
-    classes.push(`theme-${id}`);
-    document.body.className = classes.join(' ').trim();
-  };
 
   const handleSelectTheme = (id) => {
     setActiveTheme(id);

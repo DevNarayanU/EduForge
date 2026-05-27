@@ -41,11 +41,12 @@ export function useConnectivity() {
                 const { error } = await supabase.from('profiles').select('id').limit(1);
                 if (error) {
                     console.warn("[connectivity] Supabase check returned error:", error);
-                    // Network errors or authentication errors mean backend is offline/unreachable
-                    if (error.message?.includes('fetch') || error.status === 401 || error.status === 403) {
+                    // Network errors or 5xx server errors mean backend is offline/unreachable.
+                    // Auth errors (401/403) or database constraints mean the server is alive and responding.
+                    const isNetworkError = error.message?.includes('fetch') || !error.status || error.status >= 500;
+                    if (isNetworkError) {
                         setBackendStatus('offline');
                     } else {
-                        // Other database/RLS errors mean the server is reachable and online
                         setBackendStatus('online');
                     }
                 } else {

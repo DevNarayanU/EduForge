@@ -87,7 +87,7 @@ const Terms = () => {
                     </section>
 
                     <section className="terms-footer-contact">
-                        <p>Questions about our terms? Contact us at <a href="mailto:serviceforensic5@gmail.com">serviceforensic5@gmail.com</a></p>
+                        <p>Questions about our terms? Contact us at <a href="mailto:eduforge.service@gmail.com">eduforge.service@gmail.com</a></p>
                     </section>
                 </div>
             </div>

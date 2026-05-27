@@ -22,7 +22,7 @@ const Contact = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const body = `Name: ${formData.name}%0D%0AEmail: ${formData.email}%0D%0A%0D%0AMessage:%0D%0A${formData.message}`;
-        window.location.href = `mailto:serviceforensic5@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${body}`;
+        window.location.href = `mailto:eduforge.service@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${body}`;
     };
 
     return (
@@ -45,7 +45,7 @@ const Contact = () => {
                     <div className="contact-info">
                         <div className="info-block">
                             <h3>Support Email</h3>
-                            <p><a href="mailto:serviceforensic5@gmail.com">serviceforensic5@gmail.com</a></p>
+                            <p><a href="mailto:eduforge.service@gmail.com">eduforge.service@gmail.com</a></p>
                         </div>
                         <div className="info-block">
                             <h3>Response Time</h3>

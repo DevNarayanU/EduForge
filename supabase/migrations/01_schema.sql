@@ -147,16 +147,64 @@ WITH CHECK (auth.uid() = profile_id);
 -- Trigger to automatically create a profile and user_stats row on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
+DECLARE
+  base_username TEXT;
+  final_username TEXT;
+  counter INTEGER := 1;
 BEGIN
-  INSERT INTO public.profiles (id, username, display_name, verified)
+  -- Generate a base username from metadata or email
+  base_username := LOWER(COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)));
+  final_username := base_username;
+
+  -- Ensure username only contains alphanumeric characters and underscores
+  final_username := regexp_replace(final_username, '[^a-z0-9_]', '', 'g');
+  
+  -- Guarantee length requirements
+  IF length(final_username) < 3 THEN
+    final_username := final_username || 'user';
+  END IF;
+  IF length(final_username) > 20 THEN
+    final_username := substring(final_username from 1 for 20);
+  END IF;
+  
+  base_username := final_username;
+
+  -- Resolve duplicate username collisions
+  WHILE EXISTS (SELECT 1 FROM public.profiles WHERE username = final_username) LOOP
+    final_username := substring(base_username from 1 for (20 - length(counter::text) - 1)) || '_' || counter;
+    counter := counter + 1;
+  END LOOP;
+
+  -- Insert profile, fallback to metadata values
+  INSERT INTO public.profiles (
+    id, 
+    username, 
+    display_name, 
+    profile_image_url, 
+    verified, 
+    skills, 
+    socials
+  )
   VALUES (
     new.id,
-    LOWER(COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1))),
-    COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
-    true
-  );
+    final_username,
+    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', final_username),
+    COALESCE(new.raw_user_meta_data->>'avatar_url', ''),
+    true,
+    '{}'::TEXT[],
+    '{}'::JSONB
+  )
+  ON CONFLICT (id) DO NOTHING;
 
-  INSERT INTO public.user_stats (profile_id, xp_score, level, watch_time_seconds, streak, streak_dates)
+  -- Insert user stats
+  INSERT INTO public.user_stats (
+    profile_id, 
+    xp_score, 
+    level, 
+    watch_time_seconds, 
+    streak, 
+    streak_dates
+  )
   VALUES (
     new.id, 
     0, 
@@ -164,12 +212,13 @@ BEGIN
     0, 
     1, 
     ARRAY[current_date::text]
-  );
+  )
+  ON CONFLICT (profile_id) DO NOTHING;
 
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE TRIGGER on_auth_user_created
+CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

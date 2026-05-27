@@ -87,7 +87,11 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
   const navigate = useNavigate();
   
   const targetUser = urlUsername || user;
-  const isOwnProfile = !urlUsername || urlUsername === user;
+  const isOwnProfile = useMemo(() => {
+    if (!urlUsername) return true;
+    if (!user) return false;
+    return urlUsername.trim().toLowerCase() === user.trim().toLowerCase();
+  }, [urlUsername, user]);
 
   const [profile, setProfile] = useState(EMPTY_PROFILE);
   const [socials, setSocials] = useState(EMPTY_SOCIALS);
@@ -121,10 +125,17 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
   }, [isOwnProfile]);
 
   useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session && !urlUsername) {
+        navigate("/login");
+      }
+    };
+    
     if (!targetUser) {
-      navigate("/login");
+      checkSession();
     }
-  }, [navigate, targetUser]);
+  }, [navigate, targetUser, urlUsername]);
 
   useEffect(() => {
     if (!targetUser) return undefined;
@@ -578,7 +589,7 @@ export default function Profile({ user, setuser, setGlobalProfileImage }) {
 
                   <div className="profile-form-grid">
                     <label>
-                      Username
+                      Display name
                       <input name="display_name" value={form.display_name} onChange={handleProfileInput} />
                     </label>
                     <label>
