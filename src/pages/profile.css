@@ -97,14 +97,17 @@
 
 .profile-primary-button {
   background: var(--accent-primary);
-  color: var(--text-primary);
-  box-shadow: 0 4px 14px var(--border-focus);
+  color: var(--btn-text);
+  border-color: var(--accent-primary);
+  box-shadow: 0 2px 8px var(--glow-accent);
 }
 
 .profile-primary-button:hover {
   background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  color: var(--btn-text);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--border-focus);
+  box-shadow: 0 4px 12px var(--shadow-premium);
 }
 
 .profile-primary-button:disabled {

@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./video.css";
+import { FiLock, FiUnlock } from "react-icons/fi";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Custom_player from "../customplayer/Custom_player";
 import { fetchApi } from "../../services/api";
 import { fetchYoutube } from "../../services/youtube";
@@ -30,6 +33,103 @@ export default function Video({
     const [fullDescription, setFullDescription] = useState("");
 
     const playerRef = useRef(null);
+    
+    // Obsidian-style line-by-line editor state and refs
+    const [activeLineIndex, setActiveLineIndex] = useState(null);
+    const [pendingCaretPos, setPendingCaretPos] = useState(null);
+    const lineRefs = useRef([]);
+
+    const lines = notes ? notes.split('\n') : [''];
+
+    useEffect(() => {
+        if (activeLineIndex !== null && lineRefs.current[activeLineIndex]) {
+            const textarea = lineRefs.current[activeLineIndex];
+            textarea.focus();
+            
+            // Adjust auto height
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+
+            if (pendingCaretPos && pendingCaretPos.index === activeLineIndex) {
+                textarea.setSelectionRange(pendingCaretPos.pos, pendingCaretPos.pos);
+                setPendingCaretPos(null);
+            } else {
+                const len = textarea.value.length;
+                textarea.setSelectionRange(len, len);
+            }
+        }
+    }, [activeLineIndex, pendingCaretPos]);
+
+    const handleLineChange = (e, index) => {
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+
+        const newLines = [...lines];
+        newLines[index] = e.target.value;
+        setNotes(newLines.join('\n'));
+    };
+
+    const handleLineClick = (e, index) => {
+        e.stopPropagation();
+        if (e.target.tagName === 'A' || e.target.closest('a')) {
+            return;
+        }
+        setActiveLineIndex(index);
+    };
+
+    const handleContainerClick = (e) => {
+        if (e.target === e.currentTarget) {
+            setActiveLineIndex(lines.length - 1);
+        }
+    };
+
+    const handleKeyDown = (e, index) => {
+        const value = e.target.value;
+        const selectionStart = e.target.selectionStart;
+
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const before = value.substring(0, selectionStart);
+            const after = value.substring(selectionStart);
+
+            const newLines = [...lines];
+            newLines[index] = before;
+            newLines.splice(index + 1, 0, after);
+            setNotes(newLines.join('\n'));
+            setActiveLineIndex(index + 1);
+        } else if (e.key === 'Backspace' && selectionStart === 0) {
+            if (index > 0) {
+                e.preventDefault();
+                const prevLineVal = lines[index - 1];
+                const newLines = [...lines];
+                newLines[index - 1] = prevLineVal + value;
+                newLines.splice(index, 1);
+                setNotes(newLines.join('\n'));
+                setActiveLineIndex(index - 1);
+                setPendingCaretPos({ index: index - 1, pos: prevLineVal.length });
+            }
+        } else if (e.key === 'ArrowUp') {
+            const isSingleLine = e.target.scrollHeight <= 35;
+            if (isSingleLine || selectionStart === 0) {
+                if (index > 0) {
+                    e.preventDefault();
+                    setActiveLineIndex(index - 1);
+                    const targetPos = Math.min(selectionStart, lines[index - 1].length);
+                    setPendingCaretPos({ index: index - 1, pos: targetPos });
+                }
+            }
+        } else if (e.key === 'ArrowDown') {
+            const isSingleLine = e.target.scrollHeight <= 35;
+            if (isSingleLine || selectionStart === value.length) {
+                if (index < lines.length - 1) {
+                    e.preventDefault();
+                    setActiveLineIndex(index + 1);
+                    const targetPos = Math.min(selectionStart, lines[index + 1].length);
+                    setPendingCaretPos({ index: index + 1, pos: targetPos });
+                }
+            }
+        }
+    };
     const watchTimeRef = useRef(0);
     const syncedWatchTimeRef = useRef(0);
 
@@ -262,33 +362,77 @@ export default function Video({
                     <div className="notes-section">
                         <div className="notes-header">
                             <h3>Notes</h3>
-                            <button
-                                className="save-notes-btn"
-                                onClick={handleSaveNotes}
-                                disabled={isSaving}
-                            >
-                                {isSaving ? "Saving..." : "Save Notes"}
-                            </button>
+                            <div className="notes-actions-group">
+                                <div className="privacy-toggle-wrapper">
+                                    <span className="privacy-toggle-label">{isPrivate ? "Private" : "Public"}</span>
+                                    <button
+                                        type="button"
+                                        className={`privacy-toggle-switch ${isPrivate ? 'is-private' : 'is-public'}`}
+                                        onClick={() => setIsPrivate(!isPrivate)}
+                                        title={isPrivate ? "Private Note (Visible only to you)" : "Public Note (Visible to everyone)"}
+                                        aria-label={isPrivate ? "Make Note Public" : "Make Note Private"}
+                                    >
+                                        <div className="privacy-toggle-thumb">
+                                            {isPrivate ? <FiLock size={12} className="lock-icon" /> : <FiUnlock size={12} className="unlock-icon" />}
+                                        </div>
+                                    </button>
+                                </div>
+                                <button
+                                    className="save-notes-btn"
+                                    onClick={handleSaveNotes}
+                                    disabled={isSaving}
+                                >
+                                    {isSaving ? "Saving..." : "Save Notes"}
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="notes-options-row">
-                            <label className="notes-privacy-label">
-                                <input
-                                    type="checkbox"
-                                    checked={isPrivate}
-                                    onChange={(e) => setIsPrivate(e.target.checked)}
-                                />
-                                <span>🔒 Make note private</span>
-                            </label>
-                        </div>
-
-                        <div className="notes-editor-wrapper">
-                            <textarea
-                                className="notes-textarea"
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                placeholder="Type your notes here (Markdown supported)..."
-                            />
+                        <div 
+                            className="notes-editor-wrapper"
+                            onBlur={(e) => {
+                                const currentTarget = e.currentTarget;
+                                setTimeout(() => {
+                                    if (!currentTarget.contains(document.activeElement)) {
+                                        setActiveLineIndex(null);
+                                    }
+                                }, 50);
+                            }}
+                        >
+                            <div className="obsidian-editor-container" onClick={handleContainerClick}>
+                                {lines.map((line, idx) => {
+                                    const isActive = activeLineIndex === idx;
+                                    return (
+                                        <div key={idx} className={`obsidian-line-wrapper ${isActive ? 'active' : 'inactive'}`}>
+                                            {isActive ? (
+                                                <textarea
+                                                    ref={(el) => {
+                                                        if (el) lineRefs.current[idx] = el;
+                                                    }}
+                                                    className="obsidian-line-input"
+                                                    value={line}
+                                                    onChange={(e) => handleLineChange(e, idx)}
+                                                    onKeyDown={(e) => handleKeyDown(e, idx)}
+                                                    placeholder={idx === 0 ? "Type notes in Markdown here..." : ""}
+                                                    rows={1}
+                                                />
+                                            ) : (
+                                                <div 
+                                                    className="obsidian-line-preview"
+                                                    onClick={(e) => handleLineClick(e, idx)}
+                                                >
+                                                    {line.trim() ? (
+                                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                            {line}
+                                                        </ReactMarkdown>
+                                                    ) : (
+                                                        <div className="obsidian-empty-line-space">&nbsp;</div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>

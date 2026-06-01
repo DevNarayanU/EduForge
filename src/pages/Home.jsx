@@ -6,7 +6,7 @@ import Video from "../components/video/Video";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Home.css";
 import { fetchYoutube } from "../services/youtube";
-import { ALLOWED_CHANNELS } from "../constants";
+import { ALLOWED_CHANNELS_SET } from "../constants";
 import { FiGithub, FiCpu } from "react-icons/fi";
 import { filterVideosWithGroq, checkQuerySafety } from "../services/groq";
 import { getCooldownTimeLeft, registerViolation, getViolationCount } from "../services/moderation";
@@ -315,8 +315,8 @@ useEffect(() => {
                 setRawYoutubeData(rawItems);
 
                 const filtered = rawItems.filter(item =>
-                    item.snippet && ALLOWED_CHANNELS.some(ch =>
-                        item.snippet.channelTitle.trim().toLowerCase() === ch.trim().toLowerCase()
+                    item.snippet && ALLOWED_CHANNELS_SET.has(
+                        item.snippet.channelTitle.trim().toLowerCase()
                     )
                 );
 
@@ -413,8 +413,8 @@ useEffect(() => {
 
                 // Filter by the established high-quality channels
                 const filtered = longAllVideos.filter(item =>
-                    item.snippet && ALLOWED_CHANNELS.some(ch =>
-                        item.snippet.channelTitle.trim().toLowerCase() === ch.trim().toLowerCase()
+                    item.snippet && ALLOWED_CHANNELS_SET.has(
+                        item.snippet.channelTitle.trim().toLowerCase()
                     )
                 );
 

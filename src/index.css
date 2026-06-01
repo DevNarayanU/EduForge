@@ -4,6 +4,9 @@
 body{
   padding: 0;
   margin: 0;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .front-container{
@@ -15,6 +18,16 @@ body{
     position: fixed;
     margin-bottom: 20vh;
     text-align: center;
+    pointer-events: none; /* Allow interaction with 3D canvas behind */
+}
+
+/* Restore interaction for key UI elements */
+.logo,
+.front-form,
+.front-status-container,
+.login-signup,
+.front-top-actions {
+    pointer-events: auto;
 }
 
 .logo{
@@ -23,6 +36,7 @@ body{
     left: 10px;
     top: 5px;
     z-index: 1000;
+    filter: var(--logo-filter);
 }
 
 .front-content {
@@ -123,7 +137,7 @@ body{
 .login-signup{
     all:unset;
     position:absolute;
-    background-color: black;
+    background-color: var(--bg-surface-solid);
     border:none;
     border-radius: 1000px;
     right:0px;
@@ -747,4 +761,22 @@ body{
 
 .oauth-divider:not(:empty)::after {
   margin-left: 15px;
+/* ================= 3D HERO CONTAINER OVERLAYS & MIXING ================= */
+.hero-container {
+  position: fixed;
+  inset: 0px;
+  z-index: -10;
+  pointer-events: auto;
+}
+
+.hero-container canvas {
+  mix-blend-mode: screen;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Hide Spline canvas on light themes so they are clean, white, and readable */
+body.theme-3 .hero-container,
+body.theme-9 .hero-container {
+  display: none !important;
 }

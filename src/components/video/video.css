@@ -241,9 +241,9 @@
 
 .notes-section {
     background: var(--bg-surface);
-    border: 1px solid var(--bg-surface);
+    border: 1px solid var(--border-dim);
     border-radius: 20px;
-    padding: 1.5rem;
+    padding: 1rem;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -254,7 +254,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
 }
 
 .notes-header h3 {
@@ -265,12 +265,82 @@
     font-size: 1.15rem;
 }
 
+.notes-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Privacy Toggle Switch matching theme shaders */
+.privacy-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.privacy-toggle-label {
+    font-family: 'Urbanist', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 42px;
+    text-align: right;
+}
+
+.privacy-toggle-switch {
+    all: unset;
+    position: relative;
+    width: 42px;
+    height: 22px;
+    border-radius: 11px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-dim);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+}
+
+.privacy-toggle-switch.is-private {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-color: transparent;
+    box-shadow: 0 0 8px var(--glow-accent);
+}
+
+.privacy-toggle-thumb {
+    position: absolute;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--btn-text);
+    color: var(--bg-surface-solid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.privacy-toggle-switch.is-private .privacy-toggle-thumb {
+    left: 22px;
+    background: var(--text-primary);
+    color: var(--bg-surface-solid);
+}
+
+.privacy-toggle-thumb svg {
+    font-size: 10px;
+    stroke-width: 2.5px;
+}
+
 .save-notes-btn {
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    color: var(--text-primary);
+    color: var(--btn-text);
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 10px;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -278,27 +348,33 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px var(--border-focus);
+    box-shadow: 0 2px 8px var(--glow-accent);
 }
 
-.save-notes-btn:hover {
+.save-notes-btn:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px var(--shadow-premium);
+    box-shadow: 0 4px 12px var(--shadow-premium);
 }
 
 .save-notes-btn:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
 }
 
 .notes-editor-wrapper {
-    background: rgba(0, 0, 0, 0.25);
+    background: var(--input-bg);
     border-radius: 12px;
-    border: 1px solid var(--bg-surface-hover);
+    border: 1px solid var(--border-dim);
     flex-grow: 1;
     min-height: 350px;
     display: flex;
+    transition: all 0.25s ease;
+}
+
+.notes-editor-wrapper:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px var(--border-focus);
 }
 
 .notes-textarea {
@@ -307,7 +383,7 @@
     background: transparent;
     border: none;
     color: var(--text-primary);
-    padding: 1.25rem;
+    padding: 1rem;
     font-family: 'Urbanist', sans-serif;
     font-size: 0.95rem;
     line-height: 1.6;
@@ -316,7 +392,7 @@
 }
 
 .notes-textarea::placeholder {
-    color: #475569;
+    color: var(--text-muted);
 }
 
 /* ================= DESCRIPTION CONTAINER ================= */
@@ -427,30 +503,143 @@
         font-size: 0.8rem;
     }
 }
+/* ================= OBSIDIAN-STYLE LINE-BY-LINE LIVE EDITOR ================= */
 
-.notes-options-row {
+.notes-editor-wrapper {
+    background: var(--input-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-dim);
+    flex-grow: 1;
+    min-height: 350px;
     display: flex;
-    align-items: center;
-    margin-bottom: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    background: var(--bg-surface);
-    border-radius: 8px;
-    border: 1px solid var(--bg-surface);
+    flex-direction: column;
+    box-sizing: border-box;
+    transition: all 0.25s ease;
+    overflow: hidden;
 }
 
-.notes-privacy-label {
+.notes-editor-wrapper:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px var(--border-focus);
+}
+
+.obsidian-editor-container {
+    width: 100%;
+    height: 100%;
+    min-height: 348px;
+    padding: 0.5rem 0.85rem 0.85rem 0.85rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+    cursor: text;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    cursor: pointer;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.obsidian-line-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.obsidian-line-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: 'Urbanist', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    resize: none;
+    padding: 2px 0;
+    margin: 0;
+    box-sizing: border-box;
+    display: block;
+}
+
+.obsidian-line-preview {
+    width: 100%;
+    min-height: 24px;
+    cursor: text;
+    padding: 2px 0;
+    box-sizing: border-box;
+    display: block;
+}
+
+.obsidian-empty-line-space {
+    width: 100%;
+    min-height: 24px;
+    color: var(--text-muted);
+    opacity: 0.4;
     user-select: none;
-    font-weight: 500;
 }
 
-.notes-privacy-label input[type="checkbox"] {
-    accent-color: var(--accent-primary);
-    cursor: pointer;
+/* Make sure Markdown elements rendered inside the preview line behave correctly inline */
+.obsidian-line-preview p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-secondary);
 }
 
+.obsidian-line-preview h1,
+.obsidian-line-preview h2,
+.obsidian-line-preview h3,
+.obsidian-line-preview h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.obsidian-line-preview h1 { font-size: 1.30rem; border-bottom: 1px solid var(--border-dim); padding-bottom: 4px; }
+.obsidian-line-preview h2 { font-size: 1.15rem; }
+.obsidian-line-preview h3 { font-size: 1.05rem; }
+
+.obsidian-line-preview code {
+    background: var(--bg-surface-hover);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-family-mono);
+    font-size: 0.85rem;
+    color: var(--accent-primary);
+}
+
+.obsidian-line-preview pre {
+    background: var(--bg-surface-hover);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 0.25rem 0;
+    border: 1px solid var(--border-dim);
+}
+
+.obsidian-line-preview pre code {
+    background: none;
+    padding: 0;
+    color: var(--text-primary);
+}
+
+.obsidian-line-preview blockquote {
+    border-left: 3px solid var(--accent-primary);
+    margin: 0.25rem 0;
+    padding-left: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.obsidian-line-preview a {
+    color: var(--accent-primary);
+    text-decoration: underline;
+}
+
+.obsidian-line-preview a:hover {
+    color: var(--accent-secondary);
+}
+
+.obsidian-line-preview ul,
+.obsidian-line-preview ol {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--text-secondary);
+}
